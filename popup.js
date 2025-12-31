@@ -43,14 +43,32 @@ function updateTimezone(tzConfig) {
       day: 'numeric'
     });
     
-    const timeString = timeFormatter.format(now);
+    // Format time with better AM/PM visibility
+    const timeParts = timeFormatter.formatToParts(now);
+    let hours = '';
+    let minutes = '';
+    let seconds = '';
+    let dayPeriod = '';
+    
+    timeParts.forEach(part => {
+      if (part.type === 'hour') hours = part.value;
+      if (part.type === 'minute') minutes = part.value;
+      if (part.type === 'second') seconds = part.value;
+      if (part.type === 'dayPeriod') dayPeriod = part.value;
+    });
+    
+    const timeString = `${hours}:${minutes}:${seconds} ${dayPeriod}`;
     const dateString = dateFormatter.format(now);
     
     const timeDisplay = document.getElementById(tzConfig.elementId);
     const dateDisplay = document.getElementById(tzConfig.dateId);
     
     if (timeDisplay) {
-      timeDisplay.textContent = timeString || '--:--:--';
+      // Split time and AM/PM for better styling
+      const [timePart, period] = timeString.split(' ');
+      timeDisplay.innerHTML = period 
+        ? `<span class="time-value">${timePart}</span> <span class="time-period">${period}</span>`
+        : timeString || '--:--:--';
     }
     
     if (dateDisplay) {
