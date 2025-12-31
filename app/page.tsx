@@ -32,15 +32,15 @@ export default function Home() {
         <div className="hero-content">
           <div className="hero-text fade-in-up">
             <h1 className="hero-title">
-              🌏 World Clock Extension
+              World Clock Extension
             </h1>
             <p className="hero-subtitle">
-              Never miss a moment across time zones! Track EST, PST, Brazil, and Italy time 
-              with a stunning, real-time clock right in your browser.
+              Never miss a moment across time zones. Track Eastern Time, Pacific Time, Brazil, and Italy 
+              with a beautiful, real-time clock extension for Chrome.
             </p>
             <div className="hero-buttons">
-              <button onClick={handleDownload} className="btn-primary pulse">
-                ⬇️ Download Now - It's Free!
+              <button onClick={handleDownload} className="btn-primary pulse" aria-label="Download World Clock Extension">
+                Download Now - It's Free
               </button>
               <Link href="#features" className="btn-secondary">
                 Learn More
@@ -63,24 +63,24 @@ export default function Home() {
           </div>
           <div className="hero-visual float">
             <div className="clock-preview">
-              <div className="preview-card est-preview">
-                <div className="preview-flag">🇺🇸</div>
-                <div className="preview-time">{currentTime}</div>
+              <div className="preview-card est-preview" aria-label="Eastern Time preview">
+                <div className="preview-flag" aria-hidden="true">🇺🇸</div>
+                <div className="preview-time" aria-live="polite">{currentTime}</div>
                 <div className="preview-label">Eastern Time</div>
               </div>
-              <div className="preview-card pst-preview">
-                <div className="preview-flag">🇺🇸</div>
-                <div className="preview-time">{currentTime}</div>
+              <div className="preview-card pst-preview" aria-label="Pacific Time preview">
+                <div className="preview-flag" aria-hidden="true">🇺🇸</div>
+                <div className="preview-time" aria-live="polite">{currentTime}</div>
                 <div className="preview-label">Pacific Time</div>
               </div>
-              <div className="preview-card brazil-preview">
-                <div className="preview-flag">🇧🇷</div>
-                <div className="preview-time">{currentTime}</div>
+              <div className="preview-card brazil-preview" aria-label="Brazil time preview">
+                <div className="preview-flag" aria-hidden="true">🇧🇷</div>
+                <div className="preview-time" aria-live="polite">{currentTime}</div>
                 <div className="preview-label">Brazil</div>
               </div>
-              <div className="preview-card italy-preview">
-                <div className="preview-flag">🇮🇹</div>
-                <div className="preview-time">{currentTime}</div>
+              <div className="preview-card italy-preview" aria-label="Italy time preview">
+                <div className="preview-flag" aria-hidden="true">🇮🇹</div>
+                <div className="preview-time" aria-live="polite">{currentTime}</div>
                 <div className="preview-label">Italy</div>
               </div>
             </div>
@@ -91,37 +91,37 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="features">
         <div className="container">
-          <h2 className="section-title">Why You'll Love It ✨</h2>
+          <h2 className="section-title">Why You'll Love It</h2>
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon">⚡</div>
+              <div className="feature-icon" aria-hidden="true">⚡</div>
               <h3>Lightning Fast</h3>
-              <p>Updates every second with zero lag. See time changes in real-time as they happen!</p>
+              <p>Updates every second with zero lag. See time changes in real-time as they happen.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🎨</div>
+              <div className="feature-icon" aria-hidden="true">🎨</div>
               <h3>Beautiful Design</h3>
-              <p>Stunning gradient backgrounds, smooth animations, and a modern UI that's a joy to use.</p>
+              <p>Modern gradient backgrounds, smooth animations, and an intuitive user interface.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🌍</div>
-              <h3>Multiple Timezones</h3>
-              <p>Track EST, PST, Brazil, and Italy simultaneously. Perfect for global teams and travelers!</p>
+              <div className="feature-icon" aria-hidden="true">🌍</div>
+              <h3>Multiple Time Zones</h3>
+              <p>Track Eastern Time, Pacific Time, Brazil, and Italy simultaneously. Perfect for global teams and travelers.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🔒</div>
+              <div className="feature-icon" aria-hidden="true">🔒</div>
               <h3>Privacy First</h3>
-              <p>100% offline. No data collection. No tracking. Your time is yours alone.</p>
+              <p>100% offline operation. No data collection. No tracking. Your privacy is protected.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">🚀</div>
+              <div className="feature-icon" aria-hidden="true">🚀</div>
               <h3>Easy Setup</h3>
-              <p>Install in seconds. Just download, load, and start tracking time zones instantly!</p>
+              <p>Install in seconds. Download, load the extension, and start tracking time zones immediately.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon">💯</div>
+              <div className="feature-icon" aria-hidden="true">💯</div>
               <h3>Completely Free</h3>
-              <p>No ads, no subscriptions, no hidden costs. Just pure functionality, forever free.</p>
+              <p>No ads, no subscriptions, no hidden costs. Full functionality available at no charge.</p>
             </div>
           </div>
         </div>
@@ -130,22 +130,22 @@ export default function Home() {
       {/* How It Works */}
       <section className="how-it-works">
         <div className="container">
-          <h2 className="section-title">How It Works 🎯</h2>
+          <h2 className="section-title">How It Works</h2>
           <div className="steps">
             <div className="step">
               <div className="step-number">1</div>
               <h3>Download</h3>
-              <p>Click the download button above to get the extension files</p>
+              <p>Click the download button to get the extension files from GitHub</p>
             </div>
             <div className="step">
               <div className="step-number">2</div>
               <h3>Install</h3>
-              <p>Open Chrome, go to chrome://extensions/, enable Developer mode, and load the extension</p>
+              <p>Open Chrome, navigate to chrome://extensions/, enable Developer mode, and load the unpacked extension</p>
             </div>
             <div className="step">
               <div className="step-number">3</div>
-              <h3>Enjoy!</h3>
-              <p>Click the Filipino flag icon in your toolbar to see all time zones in beautiful real-time</p>
+              <h3>Start Using</h3>
+              <p>Click the extension icon in your browser toolbar to view all time zones in real-time</p>
             </div>
           </div>
         </div>
@@ -154,8 +154,8 @@ export default function Home() {
       {/* CTA Section */}
       <section className="cta">
         <div className="container">
-          <h2>Ready to Stay in Sync? 🚀</h2>
-          <p>Join users worldwide who never miss a beat across time zones</p>
+          <h2>Ready to Stay in Sync?</h2>
+          <p>Join users worldwide who stay connected across time zones</p>
           <button onClick={handleDownload} className="btn-primary large">
             Download World Clock Extension
           </button>
@@ -181,10 +181,11 @@ export default function Home() {
             <div className="footer-section">
               <h4>Support</h4>
               <p>Open source and free forever</p>
+              <p>For issues or questions, visit our GitHub repository</p>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 World Clock Extension. Made with ❤️ for global teams.</p>
+            <p>&copy; 2025 World Clock Extension. Open source software for global teams.</p>
           </div>
         </div>
       </footer>

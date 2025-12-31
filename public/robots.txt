@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://time-clock-extension.vercel.app/sitemap.xml
+
