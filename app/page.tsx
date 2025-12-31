@@ -4,22 +4,47 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function Home() {
-  const [currentTime, setCurrentTime] = useState('')
+  const [times, setTimes] = useState({
+    est: '',
+    pst: '',
+    brazil: '',
+    italy: ''
+  })
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
-    const updateTime = () => {
+    const updateTimes = () => {
       const now = new Date()
-      setCurrentTime(now.toLocaleTimeString('en-US', { 
+      const timeOptions = {
         hour12: true,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
-      }))
+      }
+      
+      setTimes({
+        est: now.toLocaleTimeString('en-US', { ...timeOptions, timeZone: 'America/New_York' }),
+        pst: now.toLocaleTimeString('en-US', { ...timeOptions, timeZone: 'America/Los_Angeles' }),
+        brazil: now.toLocaleTimeString('en-US', { ...timeOptions, timeZone: 'America/Sao_Paulo' }),
+        italy: now.toLocaleTimeString('en-US', { ...timeOptions, timeZone: 'Europe/Rome' })
+      })
     }
-    updateTime()
-    const interval = setInterval(updateTime, 1000)
+    updateTimes()
+    const interval = setInterval(updateTimes, 1000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const handleDownload = () => {
     window.open('https://github.com/draphael123/Time-clock/archive/refs/heads/main.zip', '_blank')
@@ -65,22 +90,22 @@ export default function Home() {
             <div className="clock-preview">
               <div className="preview-card est-preview" aria-label="Eastern Time preview">
                 <div className="preview-flag" aria-hidden="true">🇺🇸</div>
-                <div className="preview-time" aria-live="polite">{currentTime}</div>
+                <div className="preview-time" aria-live="polite">{times.est}</div>
                 <div className="preview-label">Eastern Time</div>
               </div>
               <div className="preview-card pst-preview" aria-label="Pacific Time preview">
                 <div className="preview-flag" aria-hidden="true">🇺🇸</div>
-                <div className="preview-time" aria-live="polite">{currentTime}</div>
+                <div className="preview-time" aria-live="polite">{times.pst}</div>
                 <div className="preview-label">Pacific Time</div>
               </div>
               <div className="preview-card brazil-preview" aria-label="Brazil time preview">
                 <div className="preview-flag" aria-hidden="true">🇧🇷</div>
-                <div className="preview-time" aria-live="polite">{currentTime}</div>
+                <div className="preview-time" aria-live="polite">{times.brazil}</div>
                 <div className="preview-label">Brazil</div>
               </div>
               <div className="preview-card italy-preview" aria-label="Italy time preview">
                 <div className="preview-flag" aria-hidden="true">🇮🇹</div>
-                <div className="preview-time" aria-live="polite">{currentTime}</div>
+                <div className="preview-time" aria-live="polite">{times.italy}</div>
                 <div className="preview-label">Italy</div>
               </div>
             </div>
@@ -163,6 +188,39 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section id="faq" className="faq">
+        <div className="container">
+          <h2 className="section-title">Frequently Asked Questions</h2>
+          <div className="faq-grid">
+            <div className="faq-item">
+              <h3>Does this extension work offline?</h3>
+              <p>Yes! The extension works completely offline. It uses your browser's built-in timezone calculations and doesn't require an internet connection.</p>
+            </div>
+            <div className="faq-item">
+              <h3>Is it available for Firefox or Edge?</h3>
+              <p>Currently, the extension is only available for Chrome. However, since it's open source, you can adapt it for other browsers.</p>
+            </div>
+            <div className="faq-item">
+              <h3>How do I update the extension?</h3>
+              <p>Since it's installed manually, you'll need to download the latest version from GitHub and reload it in Chrome's extension settings.</p>
+            </div>
+            <div className="faq-item">
+              <h3>Can I add more time zones?</h3>
+              <p>The extension currently displays EST, PST, Brazil, and Italy. You can modify the source code to add more time zones if needed.</p>
+            </div>
+            <div className="faq-item">
+              <h3>Is my data collected or tracked?</h3>
+              <p>No. The extension operates entirely offline and doesn't collect, store, or transmit any data. Your privacy is completely protected.</p>
+            </div>
+            <div className="faq-item">
+              <h3>What Chrome version do I need?</h3>
+              <p>The extension works with Chrome version 88 or later. It uses standard Chrome extension APIs that are widely supported.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="footer">
         <div className="container">
@@ -177,6 +235,9 @@ export default function Home() {
               <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer">
                 GitHub Repository
               </a>
+              <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer" className="github-badge">
+                <img src="https://img.shields.io/github/stars/draphael123/Time-clock?style=social" alt="GitHub stars" />
+              </a>
             </div>
             <div className="footer-section">
               <h4>Support</h4>
@@ -189,6 +250,17 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      {showBackToTop && (
+        <button 
+          onClick={scrollToTop} 
+          className="back-to-top"
+          aria-label="Back to top"
+        >
+          ↑
+        </button>
+      )}
 
       <style jsx>{`
         .hero {
@@ -488,6 +560,76 @@ export default function Home() {
           color: #aaa;
         }
 
+        .github-badge {
+          display: inline-block;
+          margin-top: 10px;
+        }
+
+        .github-badge img {
+          height: 20px;
+        }
+
+        .faq {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .faq-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .faq-item {
+          background: #f8f9fa;
+          padding: 30px;
+          border-radius: 15px;
+          border-left: 4px solid #667eea;
+          transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .faq-item h3 {
+          font-size: 1.3rem;
+          margin-bottom: 15px;
+          color: #333;
+        }
+
+        .faq-item p {
+          color: #666;
+          line-height: 1.6;
+        }
+
+        .back-to-top {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          width: 50px;
+          height: 50px;
+          background: var(--primary-gradient);
+          color: white;
+          border: none;
+          border-radius: 50%;
+          font-size: 24px;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          transition: all 0.3s ease;
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .back-to-top:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
         @media (max-width: 768px) {
           .hero-content {
             grid-template-columns: 1fr;
@@ -508,6 +650,18 @@ export default function Home() {
 
           .cta h2 {
             font-size: 2rem;
+          }
+
+          .back-to-top {
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+          }
+
+          .faq-grid {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
