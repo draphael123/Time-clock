@@ -30,7 +30,7 @@ function updateTimezone(tzConfig) {
     // Create formatters for time and date
     const timeFormatter = new Intl.DateTimeFormat('en-US', {
       timeZone: tzConfig.timezone,
-      hour12: false,
+      hour12: true,
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
