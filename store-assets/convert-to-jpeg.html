@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convert PNG to JPEG (Remove Alpha)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .upload-area {
+      border: 3px dashed #667eea;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      margin: 20px 0;
+      background: #f8f9ff;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .upload-area:hover {
+      background: #f0f2ff;
+      border-color: #5568d3;
+    }
+    
+    .upload-area.dragover {
+      background: #e8ebff;
+      border-color: #4456c3;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .preview {
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .preview img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 5px;
+      transition: background 0.3s;
+    }
+    
+    button:hover {
+      background: #5568d3;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .info {
+      background: #e8f4f8;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #667eea;
+    }
+    
+    .info h3 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🖼️ Convert PNG to JPEG (Remove Alpha Channel)</h1>
+    
+    <div class="info">
+      <h3>Why Convert?</h3>
+      <p>Chrome Web Store requires <strong>24-bit PNG (no alpha)</strong> or JPEG. This tool helps you convert PNG files with transparency to JPEG format, which removes the alpha channel automatically.</p>
+    </div>
+    
+    <div class="upload-area" id="uploadArea">
+      <p style="font-size: 24px; margin-bottom: 10px;">📁</p>
+      <p><strong>Click to upload or drag and drop</strong></p>
+      <p style="color: #666; font-size: 14px; margin-top: 5px;">PNG or JPEG files</p>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg">
+    </div>
+    
+    <div class="preview" id="preview"></div>
+    
+    <div style="text-align: center;">
+      <button id="convertBtn" disabled>Convert to JPEG</button>
+      <button id="downloadBtn" disabled>Download</button>
+    </div>
+    
+    <div class="info" style="margin-top: 30px;">
+      <h3>📋 Chrome Web Store Requirements:</h3>
+      <ul style="margin-left: 20px; line-height: 1.8;">
+        <li><strong>Screenshots:</strong> 1280x800 or 640x400 pixels</li>
+        <li><strong>Small Promo Tile:</strong> 440x280 pixels</li>
+        <li><strong>Marquee Promo Tile:</strong> 1400x560 pixels</li>
+        <li><strong>Format:</strong> JPEG or 24-bit PNG (no alpha)</li>
+        <li><strong>File Size:</strong> Under 1MB each</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const convertBtn = document.getElementById('convertBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    let currentFile = null;
+    let convertedCanvas = null;
+    
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        handleFile(file);
+      }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        handleFile(file);
+      }
+    });
+    
+    function handleFile(file) {
+      currentFile = file;
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          preview.innerHTML = `
+            <p><strong>Original:</strong> ${file.name} (${img.width}x${img.height})</p>
+            <img src="${e.target.result}" alt="Preview" style="max-width: 400px; margin-top: 10px;">
+          `;
+          convertBtn.disabled = false;
+        };
+        img.src = e.target.result;
+      };
+      
+      reader.readAsDataURL(file);
+    }
+    
+    convertBtn.addEventListener('click', () => {
+      if (!currentFile) return;
+      
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        
+        // Fill with white background (removes transparency)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw image on top
+        ctx.drawImage(img, 0, 0);
+        
+        convertedCanvas = canvas;
+        downloadBtn.disabled = false;
+        
+        preview.innerHTML += `
+          <p style="margin-top: 20px;"><strong>Converted:</strong> Ready to download as JPEG</p>
+          <img src="${canvas.toDataURL('image/jpeg', 0.9)}" alt="Converted" style="max-width: 400px; margin-top: 10px;">
+        `;
+      };
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(currentFile);
+    });
+    
+    downloadBtn.addEventListener('click', () => {
+      if (!convertedCanvas) return;
+      
+      convertedCanvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentFile.name.replace(/\.(png|jpg|jpeg)$/i, '.jpg');
+        a.click();
+        URL.revokeObjectURL(url);
+      }, 'image/jpeg', 0.9);
+    });
+  </script>
+</body>
+</html>
+
