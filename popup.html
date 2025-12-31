@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Clock</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌏 World Clock</h1>
+    </header>
+    
+    <div class="clock-grid">
+      <div class="clock-card est">
+        <div class="flag-icon">🇺🇸</div>
+        <div class="timezone-name">Eastern Time</div>
+        <div class="time-display" id="est-time">--:--:--</div>
+        <div class="date-display" id="est-date">--</div>
+        <div class="timezone-code">EST/EDT</div>
+      </div>
+      
+      <div class="clock-card pst">
+        <div class="flag-icon">🇺🇸</div>
+        <div class="timezone-name">Pacific Time</div>
+        <div class="time-display" id="pst-time">--:--:--</div>
+        <div class="date-display" id="pst-date">--</div>
+        <div class="timezone-code">PST/PDT</div>
+      </div>
+      
+      <div class="clock-card brazil">
+        <div class="flag-icon">🇧🇷</div>
+        <div class="timezone-name">Brazil</div>
+        <div class="time-display" id="brazil-time">--:--:--</div>
+        <div class="date-display" id="brazil-date">--</div>
+        <div class="timezone-code">BRT</div>
+      </div>
+      
+      <div class="clock-card italy">
+        <div class="flag-icon">🇮🇹</div>
+        <div class="timezone-name">Italy</div>
+        <div class="time-display" id="italy-time">--:--:--</div>
+        <div class="date-display" id="italy-date">--</div>
+        <div class="timezone-code">CET/CEST</div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
+
