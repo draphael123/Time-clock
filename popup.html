@@ -8,41 +8,130 @@
 </head>
 <body>
   <div class="container">
+    <!-- Header with controls -->
     <header>
-      <h1>🌏 World Clock</h1>
+      <div class="header-content">
+        <h1>🌏 World Clock</h1>
+        <div class="header-controls">
+          <button class="icon-btn" id="refresh-btn" title="Refresh (R)" aria-label="Refresh clocks">
+            <span>🔄</span>
+          </button>
+          <button class="icon-btn" id="settings-btn" title="Settings (S)" aria-label="Open settings">
+            <span>⚙️</span>
+          </button>
+          <button class="icon-btn" id="dark-mode-btn" title="Toggle dark mode (D)" aria-label="Toggle dark mode">
+            <span>🌙</span>
+          </button>
+          <button class="icon-btn" id="compact-mode-btn" title="Toggle compact mode (C)" aria-label="Toggle compact mode">
+            <span>📐</span>
+          </button>
+        </div>
+      </div>
+      <div class="loading-indicator" id="loading-indicator"></div>
     </header>
     
-    <div class="clock-grid">
-      <div class="clock-card est">
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settings-panel">
+      <div class="settings-content">
+        <h3>Settings</h3>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-24hour">
+            <span>24-hour format</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-seconds" checked>
+            <span>Show seconds</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-offset">
+            <span>Show UTC offset</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-difference">
+            <span>Show time difference</span>
+          </label>
+        </div>
+        <button class="close-settings" id="close-settings">Close</button>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Clock Grid -->
+    <div class="clock-grid" id="clock-grid">
+      <div class="clock-card est" data-timezone="est" title="Click to copy time">
+        <div class="day-night-indicator" id="est-indicator"></div>
         <div class="flag-icon">🇺🇸</div>
         <div class="timezone-name">Eastern Time</div>
         <div class="time-display" id="est-time">--:--:--</div>
         <div class="date-display" id="est-date">--</div>
-        <div class="timezone-code">EST/EDT</div>
+        <div class="timezone-info">
+          <div class="timezone-code">EST/EDT</div>
+          <div class="timezone-offset" id="est-offset"></div>
+          <div class="time-difference" id="est-difference"></div>
+        </div>
       </div>
       
-      <div class="clock-card pst">
+      <div class="clock-card pst" data-timezone="pst" title="Click to copy time">
+        <div class="day-night-indicator" id="pst-indicator"></div>
         <div class="flag-icon">🇺🇸</div>
         <div class="timezone-name">Pacific Time</div>
         <div class="time-display" id="pst-time">--:--:--</div>
         <div class="date-display" id="pst-date">--</div>
-        <div class="timezone-code">PST/PDT</div>
+        <div class="timezone-info">
+          <div class="timezone-code">PST/PDT</div>
+          <div class="timezone-offset" id="pst-offset"></div>
+          <div class="time-difference" id="pst-difference"></div>
+        </div>
       </div>
       
-      <div class="clock-card brazil">
+      <div class="clock-card brazil" data-timezone="brazil" title="Click to copy time">
+        <div class="day-night-indicator" id="brazil-indicator"></div>
         <div class="flag-icon">🇧🇷</div>
         <div class="timezone-name">Brazil</div>
         <div class="time-display" id="brazil-time">--:--:--</div>
         <div class="date-display" id="brazil-date">--</div>
-        <div class="timezone-code">BRT</div>
+        <div class="timezone-info">
+          <div class="timezone-code">BRT</div>
+          <div class="timezone-offset" id="brazil-offset"></div>
+          <div class="time-difference" id="brazil-difference"></div>
+        </div>
       </div>
       
-      <div class="clock-card italy">
+      <div class="clock-card italy" data-timezone="italy" title="Click to copy time">
+        <div class="day-night-indicator" id="italy-indicator"></div>
         <div class="flag-icon">🇮🇹</div>
         <div class="timezone-name">Italy</div>
         <div class="time-display" id="italy-time">--:--:--</div>
         <div class="date-display" id="italy-date">--</div>
-        <div class="timezone-code">CET/CEST</div>
+        <div class="timezone-info">
+          <div class="timezone-code">CET/CEST</div>
+          <div class="timezone-offset" id="italy-offset"></div>
+          <div class="time-difference" id="italy-difference"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div class="shortcuts-help" id="shortcuts-help">
+      <div class="shortcuts-content">
+        <h4>Keyboard Shortcuts</h4>
+        <div class="shortcut-item"><kbd>R</kbd> - Refresh</div>
+        <div class="shortcut-item"><kbd>1-4</kbd> - Copy timezone 1-4</div>
+        <div class="shortcut-item"><kbd>S</kbd> - Settings</div>
+        <div class="shortcut-item"><kbd>D</kbd> - Dark mode</div>
+        <div class="shortcut-item"><kbd>C</kbd> - Compact mode</div>
+        <div class="shortcut-item"><kbd>?</kbd> - Toggle this help</div>
+        <div class="shortcut-item"><kbd>Esc</kbd> - Close</div>
+        <button class="close-shortcuts" id="close-shortcuts">Close</button>
       </div>
     </div>
   </div>
@@ -50,4 +139,3 @@
   <script src="popup.js"></script>
 </body>
 </html>
-
