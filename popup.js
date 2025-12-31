@@ -38,9 +38,9 @@ const timezones = {
   }
 };
 
-// Settings state
+// Settings state - defaults to 12-hour format
 let settings = {
-  hour24: false,
+  hour24: false,  // Default: 12-hour format (AM/PM)
   showSeconds: true,
   showOffset: false,
   showDifference: false,
@@ -260,10 +260,21 @@ async function loadSettings() {
     const result = await chrome.storage.local.get(['settings']);
     if (result.settings) {
       settings = { ...settings, ...result.settings };
+      // Ensure hour24 defaults to false (12-hour format)
+      if (result.settings.hour24 === undefined) {
+        settings.hour24 = false;
+      }
+      applySettings();
+    } else {
+      // No settings saved, use defaults (12-hour format)
+      settings.hour24 = false;
       applySettings();
     }
   } catch (error) {
     console.error('Error loading settings:', error);
+    // On error, use defaults (12-hour format)
+    settings.hour24 = false;
+    applySettings();
   }
 }
 
