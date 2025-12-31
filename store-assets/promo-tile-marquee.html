@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marquee Promo Tile - 1400x560</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .promo-tile {
+      width: 1400px;
+      height: 560px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .promo-tile::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -20%;
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    }
+    
+    .left-section {
+      flex: 1;
+      z-index: 1;
+    }
+    
+    .icon-large {
+      font-size: 120px;
+      margin-bottom: 30px;
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+    }
+    
+    .title {
+      font-size: 64px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 20px;
+      text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+      line-height: 1.2;
+    }
+    
+    .subtitle {
+      font-size: 28px;
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 600;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .features {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .feature-badge {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 18px;
+      color: white;
+      font-weight: 700;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .right-section {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+    
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      width: 500px;
+    }
+    
+    .preview-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .preview-flag {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .preview-time {
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 5px;
+    }
+    
+    .preview-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="promo-tile">
+    <div class="left-section">
+      <div class="icon-large">🌏</div>
+      <div class="title">World Clock Extension</div>
+      <div class="subtitle">Track 4 Timezones in Real-Time</div>
+      <div class="features">
+        <div class="feature-badge">EST • PST</div>
+        <div class="feature-badge">Brazil • Italy</div>
+        <div class="feature-badge">Dark Mode</div>
+        <div class="feature-badge">Copy to Clipboard</div>
+        <div class="feature-badge">100% Free</div>
+      </div>
+    </div>
+    
+    <div class="right-section">
+      <div class="preview-grid">
+        <div class="preview-card">
+          <div class="preview-flag">🇺🇸</div>
+          <div class="preview-time">09:51 PM</div>
+          <div class="preview-label">Eastern</div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-flag">🇺🇸</div>
+          <div class="preview-time">06:51 PM</div>
+          <div class="preview-label">Pacific</div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-flag">🇧🇷</div>
+          <div class="preview-time">11:51 PM</div>
+          <div class="preview-label">Brazil</div>
+        </div>
+        <div class="preview-card">
+          <div class="preview-flag">🇮🇹</div>
+          <div class="preview-time">03:51 AM</div>
+          <div class="preview-label">Italy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Clock Extension - Screenshot Template</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .screenshot-container {
+      width: 1280px;
+      height: 800px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      font-size: 18px;
+      color: #666;
+    }
+    
+    .extension-preview {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .clock-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .clock-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border: 2px solid transparent;
+      position: relative;
+    }
+    
+    .clock-card.est {
+      border-color: #3b82f6;
+    }
+    
+    .clock-card.pst {
+      border-color: #60a5fa;
+    }
+    
+    .clock-card.brazil {
+      border-color: #22c55e;
+    }
+    
+    .clock-card.italy {
+      border-color: #f97316;
+    }
+    
+    .flag-icon {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+    
+    .timezone-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .time-display {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .date-display {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    
+    .timezone-code {
+      font-size: 12px;
+      color: #aaa;
+    }
+    
+    .features-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #667eea;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .watermark {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #999;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="screenshot-container">
+    <div class="features-badge">Track 4 Timezones in Real-Time</div>
+    
+    <div class="header">
+      <h1>🌏 World Clock Extension</h1>
+      <p>Never miss a moment across time zones</p>
+    </div>
+    
+    <div class="extension-preview">
+      <div class="clock-grid">
+        <div class="clock-card est">
+          <div class="flag-icon">🇺🇸</div>
+          <div class="timezone-name">Eastern Time</div>
+          <div class="time-display">09:51:19 PM</div>
+          <div class="date-display">Tue, Dec 30</div>
+          <div class="timezone-code">EST/EDT</div>
+        </div>
+        
+        <div class="clock-card pst">
+          <div class="flag-icon">🇺🇸</div>
+          <div class="timezone-name">Pacific Time</div>
+          <div class="time-display">06:51:19 PM</div>
+          <div class="date-display">Tue, Dec 30</div>
+          <div class="timezone-code">PST/PDT</div>
+        </div>
+        
+        <div class="clock-card brazil">
+          <div class="flag-icon">🇧🇷</div>
+          <div class="timezone-name">Brazil</div>
+          <div class="time-display">11:51:19 PM</div>
+          <div class="date-display">Tue, Dec 30</div>
+          <div class="timezone-code">BRT</div>
+        </div>
+        
+        <div class="clock-card italy">
+          <div class="flag-icon">🇮🇹</div>
+          <div class="timezone-name">Italy</div>
+          <div class="time-display">03:51:19 AM</div>
+          <div class="date-display">Wed, Dec 31</div>
+          <div class="timezone-code">CET/CEST</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="watermark">World Clock Extension - Chrome Web Store</div>
+  </div>
+</body>
+</html>
+
