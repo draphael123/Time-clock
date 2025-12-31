@@ -1,0 +1,39 @@
+# Files to exclude when packaging the extension
+
+# Website files (Next.js)
+app/
+out/
+public/
+node_modules/
+.next/
+*.ts
+*.tsx
+next.config.js
+tsconfig.json
+vercel.json
+package.json
+package-lock.json
+
+# Documentation (optional - can include if desired)
+*.md
+!README.md
+
+# Development files
+create_icons.py
+DEPLOY.md
+EXTENSION_SUGGESTIONS.md
+FIX_RELOAD.md
+RELOAD_INSTRUCTIONS.md
+README-SITE.md
+
+# Build artifacts
+.git/
+.gitignore
+
+# Keep these for extension
+manifest.json
+popup.html
+popup.js
+popup.css
+icons/
+
