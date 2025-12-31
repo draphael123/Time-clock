@@ -2,6 +2,8 @@
 
 A beautiful, feature-rich Chrome extension that displays time in EST, PST, Brazil, and Italy timezones with a modern interface.
 
+🌐 **Live Website:** [https://time-clock-extension.vercel.app/](https://time-clock-extension.vercel.app/)
+
 ![World Clock Extension](icons/icon128.png)
 
 ## ✨ Features
