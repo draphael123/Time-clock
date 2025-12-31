@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "World Clock - EST, PST, Brazil & Italy",
   "version": "1.0.0",
+  "version_name": "1.0.0",
   "description": "Beautiful Chrome extension displaying EST, PST, Brazil, and Italy time zones in real-time. Features 12-hour format, dark mode, copy to clipboard, and more!",
   "author": "World Clock Extension",
   "permissions": [
