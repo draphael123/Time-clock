@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate Screenshots - Quick Guide</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 18px;
+    }
+    
+    .step {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .step h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+    
+    .step ol {
+      margin-left: 20px;
+      line-height: 2;
+    }
+    
+    .step li {
+      margin-bottom: 8px;
+    }
+    
+    .screenshot-item {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .screenshot-info h3 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .screenshot-info p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .screenshot-link {
+      background: #667eea;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    
+    .screenshot-link:hover {
+      background: #5568d3;
+    }
+    
+    .required {
+      background: #e74c3c;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    
+    .optional {
+      background: #27ae60;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    
+    .code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    
+    .tip {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    
+    .tip strong {
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📸 Generate Chrome Web Store Screenshots</h1>
+    <p class="subtitle">Quick guide to create all required screenshots</p>
+    
+    <div class="step">
+      <h2>Step 1: Open Each Template</h2>
+      <p>Click the links below to open each template in a new tab. Keep this page open for reference.</p>
+    </div>
+    
+    <div class="screenshot-item">
+      <div class="screenshot-info">
+        <h3>Screenshot 1: Main View <span class="required">REQUIRED</span></h3>
+        <p>1280x800 or 640x400 pixels • Shows main extension interface</p>
+      </div>
+      <a href="screenshot-template.html" target="_blank" class="screenshot-link">Open Template</a>
+    </div>
+    
+    <div class="screenshot-item">
+      <div class="screenshot-info">
+        <h3>Screenshot 2: Dark Mode <span class="optional">OPTIONAL</span></h3>
+        <p>1280x800 or 640x400 pixels • Shows dark mode theme</p>
+      </div>
+      <a href="screenshot-dark-mode.html" target="_blank" class="screenshot-link">Open Template</a>
+    </div>
+    
+    <div class="screenshot-item">
+      <div class="screenshot-info">
+        <h3>Small Promo Tile <span class="required">REQUIRED</span></h3>
+        <p>440x280 pixels • Used in Chrome Web Store featured sections</p>
+      </div>
+      <a href="promo-tile-small.html" target="_blank" class="screenshot-link">Open Template</a>
+    </div>
+    
+    <div class="screenshot-item">
+      <div class="screenshot-info">
+        <h3>Marquee Promo Tile <span class="optional">OPTIONAL</span></h3>
+        <p>1400x560 pixels • For featured placement</p>
+      </div>
+      <a href="promo-tile-marquee.html" target="_blank" class="screenshot-link">Open Template</a>
+    </div>
+    
+    <div class="step">
+      <h2>Step 2: Take Screenshots</h2>
+      <ol>
+        <li>With the template open, press <span class="code">F12</span> to open DevTools</li>
+        <li>Press <span class="code">Ctrl+Shift+P</span> (Windows) or <span class="code">Cmd+Shift+P</span> (Mac)</li>
+        <li>Type: <span class="code">Capture full size screenshot</span></li>
+        <li>Press Enter - screenshot downloads automatically</li>
+        <li>Rename the file to match the template name (e.g., <span class="code">screenshot-1-main.jpg</span>)</li>
+      </ol>
+    </div>
+    
+    <div class="step">
+      <h2>Step 3: Verify Dimensions</h2>
+      <ol>
+        <li>Right-click the downloaded image → Properties</li>
+        <li>Check dimensions match requirements:
+          <ul style="margin-left: 30px; margin-top: 10px;">
+            <li>Screenshots: 1280x800 or 640x400</li>
+            <li>Small promo tile: Exactly 440x280</li>
+            <li>Marquee promo tile: Exactly 1400x560</li>
+          </ul>
+        </li>
+        <li>If dimensions don't match, use an image editor to resize</li>
+      </ol>
+    </div>
+    
+    <div class="step">
+      <h2>Step 4: Convert to JPEG (If Needed)</h2>
+      <ol>
+        <li>If you saved as PNG, open <a href="convert-to-jpeg.html" target="_blank">convert-to-jpeg.html</a></li>
+        <li>Upload your PNG file</li>
+        <li>Click "Convert to JPEG"</li>
+        <li>Download the converted file</li>
+      </ol>
+    </div>
+    
+    <div class="tip">
+      <strong>💡 Pro Tip:</strong> Save all screenshots as JPEG format to avoid alpha channel issues. Chrome Web Store requires JPEG or 24-bit PNG (no alpha).
+    </div>
+    
+    <div class="step">
+      <h2>✅ Final Checklist</h2>
+      <ul style="margin-left: 20px; line-height: 2;">
+        <li>Store icon: <span class="code">icons/icon128.jpg</span> ✅ (Already converted)</li>
+        <li>Screenshot 1: <span class="code">screenshot-1-main.jpg</span> (1280x800 or 640x400)</li>
+        <li>Small promo tile: <span class="code">promo-tile-small.jpg</span> (440x280)</li>
+        <li>All files are JPEG format</li>
+        <li>All files are under 1MB each</li>
+        <li>Dimensions are exact</li>
+      </ul>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+      <p style="color: #666; margin-bottom: 10px;">Ready to upload to Chrome Web Store!</p>
+      <a href="https://chrome.google.com/webstore/devconsole" target="_blank" style="background: #667eea; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Go to Chrome Web Store Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>
+

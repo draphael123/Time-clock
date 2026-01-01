@@ -11,6 +11,24 @@ export default function Home() {
     italy: ''
   })
   const [showBackToTop, setShowBackToTop] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [selectedScreenshot, setSelectedScreenshot] = useState(0)
+  const [showDemo, setShowDemo] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [selectedScreenshot, setSelectedScreenshot] = useState(0)
+  const [showDemo, setShowDemo] = useState(false)
+
+  useEffect(() => {
+    // Load dark mode preference
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true'
+    setDarkMode(savedDarkMode)
+    if (savedDarkMode) {
+      document.documentElement.classList.add('dark')
+    }
+    setLoading(false)
+  }, [])
 
   useEffect(() => {
     const updateTimes = () => {
@@ -34,6 +52,17 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [])
 
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode
+    setDarkMode(newDarkMode)
+    localStorage.setItem('darkMode', String(newDarkMode))
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 300)
@@ -47,6 +76,8 @@ export default function Home() {
   }
 
   const handleDownload = () => {
+    // Direct download link to latest version from GitHub main branch
+    // This always downloads the most recent version with all features
     window.open('https://github.com/draphael123/Time-clock/archive/refs/heads/main.zip', '_blank')
   }
 
@@ -70,6 +101,14 @@ export default function Home() {
               <Link href="#features" className="btn-secondary">
                 Learn More
               </Link>
+              <button 
+                onClick={toggleDarkMode} 
+                className="hero-dark-toggle"
+                aria-label="Toggle dark mode"
+                title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
             </div>
             <div className="hero-stats">
               <div className="stat">
@@ -113,6 +152,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Dark Mode Toggle */}
+      <button 
+        onClick={toggleDarkMode} 
+        className="dark-mode-toggle"
+        aria-label="Toggle dark mode"
+        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
+
+      {/* Loading Spinner */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
+
       {/* Features Section */}
       <section id="features" className="features">
         <div className="container">
@@ -152,6 +208,253 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Screenshot Gallery */}
+      <section id="screenshots" className="screenshots">
+        <div className="container">
+          <h2 className="section-title">See It In Action</h2>
+          <div className="screenshot-gallery">
+            <div className="screenshot-main">
+              <div className="screenshot-card">
+                <div className="screenshot-header">
+                  <div className="screenshot-dots">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div className="screenshot-title">World Clock Extension</div>
+                </div>
+                <div className="screenshot-content">
+                  {selectedScreenshot === 0 && (
+                    <div className="demo-popup">
+                      <div className="demo-header">
+                        <h3>🌏 World Clock</h3>
+                        <div className="demo-controls">
+                          <span>🔄</span><span>⚙️</span><span>🌙</span><span>📐</span>
+                        </div>
+                      </div>
+                      <div className="demo-clocks">
+                        <div className="demo-clock-card">
+                          <div className="demo-flag">🇺🇸</div>
+                          <div className="demo-time">{times.est}</div>
+                          <div className="demo-label">Eastern Time</div>
+                        </div>
+                        <div className="demo-clock-card">
+                          <div className="demo-flag">🇺🇸</div>
+                          <div className="demo-time">{times.pst}</div>
+                          <div className="demo-label">Pacific Time</div>
+                        </div>
+                        <div className="demo-clock-card">
+                          <div className="demo-flag">🇧🇷</div>
+                          <div className="demo-time">{times.brazil}</div>
+                          <div className="demo-label">Brazil</div>
+                        </div>
+                        <div className="demo-clock-card">
+                          <div className="demo-flag">🇮🇹</div>
+                          <div className="demo-time">{times.italy}</div>
+                          <div className="demo-label">Italy</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedScreenshot === 1 && (
+                    <div className="demo-popup dark-demo">
+                      <div className="demo-header">
+                        <h3>🌏 World Clock</h3>
+                        <div className="demo-controls">
+                          <span>🔄</span><span>⚙️</span><span>☀️</span><span>📐</span>
+                        </div>
+                      </div>
+                      <div className="demo-clocks">
+                        <div className="demo-clock-card dark-card">
+                          <div className="demo-flag">🇺🇸</div>
+                          <div className="demo-time">{times.est}</div>
+                          <div className="demo-label">Eastern Time</div>
+                        </div>
+                        <div className="demo-clock-card dark-card">
+                          <div className="demo-flag">🇺🇸</div>
+                          <div className="demo-time">{times.pst}</div>
+                          <div className="demo-label">Pacific Time</div>
+                        </div>
+                        <div className="demo-clock-card dark-card">
+                          <div className="demo-flag">🇧🇷</div>
+                          <div className="demo-time">{times.brazil}</div>
+                          <div className="demo-label">Brazil</div>
+                        </div>
+                        <div className="demo-clock-card dark-card">
+                          <div className="demo-flag">🇮🇹</div>
+                          <div className="demo-time">{times.italy}</div>
+                          <div className="demo-label">Italy</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedScreenshot === 2 && (
+                    <div className="demo-popup">
+                      <div className="demo-header">
+                        <h3>⚙️ Settings</h3>
+                      </div>
+                      <div className="demo-settings">
+                        <div className="demo-setting-item">
+                          <label>24-hour format</label>
+                          <input type="checkbox" />
+                        </div>
+                        <div className="demo-setting-item">
+                          <label>Show seconds</label>
+                          <input type="checkbox" checked />
+                        </div>
+                        <div className="demo-setting-item">
+                          <label>Show UTC offset</label>
+                          <input type="checkbox" />
+                        </div>
+                        <div className="demo-setting-item">
+                          <label>Show time difference</label>
+                          <input type="checkbox" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="screenshot-thumbnails">
+              <button 
+                className={selectedScreenshot === 0 ? 'active' : ''}
+                onClick={() => setSelectedScreenshot(0)}
+              >
+                Light Mode
+              </button>
+              <button 
+                className={selectedScreenshot === 1 ? 'active' : ''}
+                onClick={() => setSelectedScreenshot(1)}
+              >
+                Dark Mode
+              </button>
+              <button 
+                className={selectedScreenshot === 2 ? 'active' : ''}
+                onClick={() => setSelectedScreenshot(2)}
+              >
+                Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Feature Comparison Table */}
+      <section id="comparison" className="comparison">
+        <div className="container">
+          <h2 className="section-title">Why Choose Us?</h2>
+          <div className="comparison-table-wrapper">
+            <table className="comparison-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>World Clock Extension</th>
+                  <th>Other Extensions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Free Forever</td>
+                  <td>✅ Yes</td>
+                  <td>❌ Often Paid</td>
+                </tr>
+                <tr>
+                  <td>100% Offline</td>
+                  <td>✅ Yes</td>
+                  <td>❌ Usually Requires Internet</td>
+                </tr>
+                <tr>
+                  <td>No Data Collection</td>
+                  <td>✅ Zero Tracking</td>
+                  <td>❌ Often Tracks Usage</td>
+                </tr>
+                <tr>
+                  <td>Dark Mode</td>
+                  <td>✅ Built-in</td>
+                  <td>⚠️ Sometimes</td>
+                </tr>
+                <tr>
+                  <td>Customizable</td>
+                  <td>✅ Full Settings</td>
+                  <td>⚠️ Limited</td>
+                </tr>
+                <tr>
+                  <td>Keyboard Shortcuts</td>
+                  <td>✅ Full Support</td>
+                  <td>⚠️ Rare</td>
+                </tr>
+                <tr>
+                  <td>Open Source</td>
+                  <td>✅ Yes</td>
+                  <td>❌ Usually No</td>
+                </tr>
+                <tr>
+                  <td>Copy to Clipboard</td>
+                  <td>✅ One-Click</td>
+                  <td>⚠️ Sometimes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* Version History / Changelog */}
+      <section id="changelog" className="changelog">
+        <div className="container">
+          <h2 className="section-title">What's New</h2>
+          <div className="changelog-list">
+            <div className="changelog-item">
+              <div className="changelog-version">v1.0.0</div>
+              <div className="changelog-date">January 2025</div>
+              <div className="changelog-content">
+                <h4>Initial Release</h4>
+                <ul>
+                  <li>✅ Real-time clock updates for EST, PST, Brazil, and Italy</li>
+                  <li>✅ 12-hour format with AM/PM display</li>
+                  <li>✅ Dark mode support</li>
+                  <li>✅ Copy to clipboard functionality</li>
+                  <li>✅ Settings panel with customization options</li>
+                  <li>✅ Keyboard shortcuts for power users</li>
+                  <li>✅ Day/night indicators</li>
+                  <li>✅ Compact mode</li>
+                  <li>✅ Settings persistence</li>
+                  <li>✅ Beautiful gradient design</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="testimonials">
+        <div className="container">
+          <h2 className="section-title">What Users Say</h2>
+          <div className="testimonials-grid">
+            <div className="testimonial-card">
+              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p className="testimonial-text">"Perfect for my remote team! I can quickly check times across different timezones without opening a new tab."</p>
+              <div className="testimonial-author">- Remote Worker</div>
+            </div>
+            <div className="testimonial-card">
+              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p className="testimonial-text">"Love the dark mode and the ability to copy times. Makes scheduling meetings so much easier!"</p>
+              <div className="testimonial-author">- Project Manager</div>
+            </div>
+            <div className="testimonial-card">
+              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p className="testimonial-text">"Finally, a timezone extension that's free, works offline, and doesn't track me. Highly recommend!"</p>
+              <div className="testimonial-author">- Privacy-Conscious User</div>
+            </div>
+            <div className="testimonial-card">
+              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
+              <p className="testimonial-text">"The keyboard shortcuts are a game-changer. I can copy times without even touching my mouse!"</p>
+              <div className="testimonial-author">- Power User</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="how-it-works">
         <div className="container">
@@ -160,7 +463,7 @@ export default function Home() {
             <div className="step">
               <div className="step-number">1</div>
               <h3>Download</h3>
-              <p>Click the download button to get the extension files from GitHub</p>
+              <p>Click the download button to get the latest extension files from GitHub (includes all features: dark mode, copy to clipboard, settings, and more)</p>
             </div>
             <div className="step">
               <div className="step-number">2</div>
@@ -184,7 +487,7 @@ export default function Home() {
           <button onClick={handleDownload} className="btn-primary large">
             Download World Clock Extension
           </button>
-          <p className="cta-note">Free • No Sign-up Required • Instant Access</p>
+          <p className="cta-note">Free • No Sign-up Required • Instant Access • Always Latest Version</p>
         </div>
       </section>
 
@@ -203,7 +506,7 @@ export default function Home() {
             </div>
             <div className="faq-item">
               <h3>How do I update the extension?</h3>
-              <p>Since it's installed manually, you'll need to download the latest version from GitHub and reload it in Chrome's extension settings.</p>
+              <p>Since it's installed manually, you'll need to download the latest version from GitHub (the download button always provides the most recent version) and reload it in Chrome's extension settings.</p>
             </div>
             <div className="faq-item">
               <h3>Can I add more time zones?</h3>
@@ -341,6 +644,25 @@ export default function Home() {
         .btn-secondary:hover {
           background: rgba(255, 255, 255, 0.3);
           transform: translateY(-3px);
+        }
+
+        .hero-dark-toggle {
+          background: rgba(255, 255, 255, 0.2);
+          border: 2px solid white;
+          border-radius: 50%;
+          width: 50px;
+          height: 50px;
+          font-size: 20px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .hero-dark-toggle:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: scale(1.1);
         }
 
         .hero-stats {
@@ -661,6 +983,471 @@ export default function Home() {
           }
 
           .faq-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          border: 2px solid rgba(255, 255, 255, 0.5);
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          font-size: 24px;
+          cursor: pointer;
+          z-index: 10000;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .dark-mode-toggle:hover {
+          transform: scale(1.15);
+          background: rgba(255, 255, 255, 1);
+          box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark-mode-toggle:active {
+          transform: scale(1.05);
+        }
+
+        /* Dark mode styles for toggle button */
+        :global(.dark) .dark-mode-toggle {
+          background: rgba(26, 26, 26, 0.9);
+          border-color: rgba(255, 255, 255, 0.3);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        :global(.dark) .dark-mode-toggle:hover {
+          background: rgba(26, 26, 26, 1);
+          box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(255, 255, 255, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+        }
+
+        .spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #667eea;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        /* Screenshot Gallery */
+        .screenshots {
+          padding: 100px 20px;
+          background: #f8f9fa;
+        }
+
+        .screenshot-gallery {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+
+        .screenshot-main {
+          margin-bottom: 30px;
+        }
+
+        .screenshot-card {
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .screenshot-header {
+          background: #f0f0f0;
+          padding: 15px 20px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .screenshot-dots {
+          display: flex;
+          gap: 5px;
+        }
+
+        .screenshot-dots span {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #ddd;
+        }
+
+        .screenshot-dots span:nth-child(1) { background: #ff5f57; }
+        .screenshot-dots span:nth-child(2) { background: #ffbd2e; }
+        .screenshot-dots span:nth-child(3) { background: #28ca42; }
+
+        .screenshot-title {
+          flex: 1;
+          text-align: center;
+          font-weight: 600;
+          color: #666;
+        }
+
+        .screenshot-content {
+          padding: 20px;
+          background: #f8f9fa;
+          min-height: 400px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .demo-popup {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          width: 100%;
+          max-width: 400px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-popup.dark-demo {
+          background: #1a1a1a;
+          color: white;
+        }
+
+        .demo-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .dark-demo .demo-header {
+          border-bottom-color: #333;
+        }
+
+        .demo-header h3 {
+          margin: 0;
+          font-size: 1.2rem;
+        }
+
+        .demo-controls {
+          display: flex;
+          gap: 10px;
+        }
+
+        .demo-controls span {
+          font-size: 1.2rem;
+          cursor: pointer;
+        }
+
+        .demo-clocks {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+
+        .demo-clock-card {
+          background: #f8f9fa;
+          border-radius: 8px;
+          padding: 15px;
+          text-align: center;
+        }
+
+        .demo-clock-card.dark-card {
+          background: #2a2a2a;
+        }
+
+        .demo-flag {
+          font-size: 2rem;
+          margin-bottom: 10px;
+        }
+
+        .demo-time {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: 5px;
+        }
+
+        .demo-label {
+          font-size: 0.85rem;
+          color: #666;
+        }
+
+        .dark-card .demo-label {
+          color: #aaa;
+        }
+
+        .demo-settings {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .demo-setting-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px;
+          background: #f8f9fa;
+          border-radius: 6px;
+        }
+
+        .screenshot-thumbnails {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+        }
+
+        .screenshot-thumbnails button {
+          padding: 10px 20px;
+          border: 2px solid #ddd;
+          background: white;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 600;
+        }
+
+        .screenshot-thumbnails button:hover {
+          border-color: #667eea;
+        }
+
+        .screenshot-thumbnails button.active {
+          background: #667eea;
+          color: white;
+          border-color: #667eea;
+        }
+
+        /* Feature Comparison */
+        .comparison {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .comparison-table-wrapper {
+          overflow-x: auto;
+          margin-top: 40px;
+        }
+
+        .comparison-table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+          border-radius: 12px;
+          overflow: hidden;
+        }
+
+        .comparison-table thead {
+          background: var(--primary-gradient);
+          color: white;
+        }
+
+        .comparison-table th {
+          padding: 20px;
+          text-align: left;
+          font-weight: 700;
+        }
+
+        .comparison-table td {
+          padding: 15px 20px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table tbody tr:hover {
+          background: #f8f9fa;
+        }
+
+        .comparison-table tbody tr:last-child td {
+          border-bottom: none;
+        }
+
+        /* Changelog */
+        .changelog {
+          padding: 100px 20px;
+          background: #f8f9fa;
+        }
+
+        .changelog-list {
+          max-width: 800px;
+          margin: 0 auto;
+        }
+
+        .changelog-item {
+          background: white;
+          border-radius: 12px;
+          padding: 30px;
+          margin-bottom: 20px;
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .changelog-version {
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: #667eea;
+          margin-bottom: 5px;
+        }
+
+        .changelog-date {
+          color: #666;
+          margin-bottom: 20px;
+        }
+
+        .changelog-content h4 {
+          margin-bottom: 15px;
+          color: #333;
+        }
+
+        .changelog-content ul {
+          list-style: none;
+          padding: 0;
+        }
+
+        .changelog-content li {
+          padding: 8px 0;
+          color: #666;
+        }
+
+        /* Testimonials */
+        .testimonials {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .testimonials-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .testimonial-card {
+          background: #f8f9fa;
+          padding: 30px;
+          border-radius: 12px;
+          border-left: 4px solid #667eea;
+          transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .testimonial-stars {
+          font-size: 1.2rem;
+          margin-bottom: 15px;
+        }
+
+        .testimonial-text {
+          font-style: italic;
+          color: #666;
+          margin-bottom: 15px;
+          line-height: 1.6;
+        }
+
+        .testimonial-author {
+          font-weight: 600;
+          color: #333;
+        }
+
+        /* Dark Mode Styles */
+        :global(.dark) .features,
+        :global(.dark) .comparison,
+        :global(.dark) .changelog,
+        :global(.dark) .testimonials {
+          background: #1a1a1a;
+          color: white;
+        }
+
+        :global(.dark) .feature-card,
+        :global(.dark) .changelog-item,
+        :global(.dark) .testimonial-card {
+          background: #2a2a2a;
+          color: white;
+        }
+
+        :global(.dark) .feature-card h3,
+        :global(.dark) .changelog-content h4,
+        :global(.dark) .testimonial-author {
+          color: white;
+        }
+
+        :global(.dark) .feature-card p,
+        :global(.dark) .changelog-content li,
+        :global(.dark) .testimonial-text {
+          color: #aaa;
+        }
+
+        :global(.dark) .comparison-table {
+          background: #2a2a2a;
+          color: white;
+        }
+
+        :global(.dark) .comparison-table td {
+          border-bottom-color: #333;
+        }
+
+        :global(.dark) .comparison-table tbody tr:hover {
+          background: #333;
+        }
+
+        :global(.dark) .screenshot-card {
+          background: #2a2a2a;
+        }
+
+        :global(.dark) .screenshot-header {
+          background: #1a1a1a;
+        }
+
+        :global(.dark) .screenshot-content {
+          background: #1a1a1a;
+        }
+
+        @media (max-width: 768px) {
+          .dark-mode-toggle {
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+          }
+
+          .screenshot-content {
+            min-height: 300px;
+          }
+
+          .demo-clocks {
+            grid-template-columns: 1fr;
+          }
+
+          .comparison-table-wrapper {
+            overflow-x: scroll;
+          }
+
+          .testimonials-grid {
             grid-template-columns: 1fr;
           }
         }

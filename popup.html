@@ -25,7 +25,15 @@
           <button class="icon-btn" id="compact-mode-btn" title="Toggle compact mode (C)" aria-label="Toggle compact mode">
             <span>📐</span>
           </button>
+          <button class="icon-btn add-timezone-header-btn" id="add-timezone-btn" title="Add timezone" aria-label="Add timezone">
+            <span>+</span>
+          </button>
         </div>
+      </div>
+      <div class="add-timezone-section">
+        <button class="add-timezone-btn-large" id="add-timezone-btn-large">
+          ➕ Add Timezone
+        </button>
       </div>
       <div class="loading-indicator" id="loading-indicator"></div>
     </header>
@@ -59,6 +67,23 @@
           </label>
         </div>
         <button class="close-settings" id="close-settings">Close</button>
+      </div>
+    </div>
+
+    <!-- Add Timezone Panel -->
+    <div class="timezone-panel" id="timezone-panel">
+      <div class="timezone-panel-content">
+        <h3>Add Timezone</h3>
+        <div class="timezone-search">
+          <input 
+            type="text" 
+            id="timezone-search-input" 
+            placeholder="Search timezones (e.g., London, Tokyo, Sydney...)"
+            autocomplete="off"
+          />
+          <div class="timezone-results" id="timezone-results"></div>
+        </div>
+        <button class="close-timezone-panel" id="close-timezone-panel">Close</button>
       </div>
     </div>
 

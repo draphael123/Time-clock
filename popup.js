@@ -48,6 +48,33 @@ let settings = {
   compactMode: false
 };
 
+// Popular timezones for adding
+const popularTimezones = [
+  { name: 'London', timezone: 'Europe/London', flag: '🇬🇧' },
+  { name: 'Tokyo', timezone: 'Asia/Tokyo', flag: '🇯🇵' },
+  { name: 'Sydney', timezone: 'Australia/Sydney', flag: '🇦🇺' },
+  { name: 'Chicago', timezone: 'America/Chicago', flag: '🇺🇸' },
+  { name: 'Denver', timezone: 'America/Denver', flag: '🇺🇸' },
+  { name: 'Toronto', timezone: 'America/Toronto', flag: '🇨🇦' },
+  { name: 'Vancouver', timezone: 'America/Vancouver', flag: '🇨🇦' },
+  { name: 'Mexico City', timezone: 'America/Mexico_City', flag: '🇲🇽' },
+  { name: 'Buenos Aires', timezone: 'America/Buenos_Aires', flag: '🇦🇷' },
+  { name: 'Paris', timezone: 'Europe/Paris', flag: '🇫🇷' },
+  { name: 'Berlin', timezone: 'Europe/Berlin', flag: '🇩🇪' },
+  { name: 'Madrid', timezone: 'Europe/Madrid', flag: '🇪🇸' },
+  { name: 'Moscow', timezone: 'Europe/Moscow', flag: '🇷🇺' },
+  { name: 'Dubai', timezone: 'Asia/Dubai', flag: '🇦🇪' },
+  { name: 'Mumbai', timezone: 'Asia/Kolkata', flag: '🇮🇳' },
+  { name: 'Singapore', timezone: 'Asia/Singapore', flag: '🇸🇬' },
+  { name: 'Hong Kong', timezone: 'Asia/Hong_Kong', flag: '🇭🇰' },
+  { name: 'Seoul', timezone: 'Asia/Seoul', flag: '🇰🇷' },
+  { name: 'Beijing', timezone: 'Asia/Shanghai', flag: '🇨🇳' },
+  { name: 'Auckland', timezone: 'Pacific/Auckland', flag: '🇳🇿' }
+];
+
+// Custom timezones storage
+let customTimezones = [];
+
 // Get local timezone
 function getLocalTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -257,7 +284,7 @@ function updateAllClocks() {
 // Load settings from storage
 async function loadSettings() {
   try {
-    const result = await chrome.storage.local.get(['settings']);
+    const result = await chrome.storage.local.get(['settings', 'customTimezones']);
     if (result.settings) {
       settings = { ...settings, ...result.settings };
       // Ensure hour24 defaults to false (12-hour format)
@@ -270,6 +297,12 @@ async function loadSettings() {
       settings.hour24 = false;
       applySettings();
     }
+    
+    // Load custom timezones
+    if (result.customTimezones) {
+      customTimezones = result.customTimezones;
+      customTimezones.forEach(tz => renderCustomTimezone(tz));
+    }
   } catch (error) {
     console.error('Error loading settings:', error);
     // On error, use defaults (12-hour format)
@@ -281,11 +314,127 @@ async function loadSettings() {
 // Save settings to storage
 async function saveSettings() {
   try {
-    await chrome.storage.local.set({ settings });
+    await chrome.storage.local.set({ settings, customTimezones });
     applySettings();
   } catch (error) {
     console.error('Error saving settings:', error);
   }
+}
+
+// Search timezones
+function searchTimezones(query) {
+  if (!query) return popularTimezones;
+  const lowerQuery = query.toLowerCase();
+  return popularTimezones.filter(tz => 
+    tz.name.toLowerCase().includes(lowerQuery) ||
+    tz.timezone.toLowerCase().includes(lowerQuery)
+  );
+}
+
+// Add custom timezone
+function addCustomTimezone(timezoneConfig) {
+  try {
+    // Check if already added
+    const existing = customTimezones.find(tz => tz.timezone === timezoneConfig.timezone);
+    if (existing) {
+      showToast(`${timezoneConfig.name} is already added`);
+      return null;
+    }
+    
+    const newId = `custom-${Date.now()}`;
+    const customTz = {
+      id: newId,
+      timezone: timezoneConfig.timezone,
+      name: timezoneConfig.name,
+      flag: timezoneConfig.flag || '🌍',
+      elementId: `${newId}-time`,
+      dateId: `${newId}-date`,
+      offsetId: `${newId}-offset`,
+      differenceId: `${newId}-difference`,
+      indicatorId: `${newId}-indicator`,
+      cardId: newId
+    };
+    
+    customTimezones.push(customTz);
+    saveSettings();
+    renderCustomTimezone(customTz);
+    showToast(`Added ${timezoneConfig.name}`);
+    return customTz;
+  } catch (error) {
+    console.error('Error adding timezone:', error);
+    showToast('Error adding timezone');
+    return null;
+  }
+}
+
+// Remove custom timezone
+function removeCustomTimezone(timezoneId) {
+  try {
+    customTimezones = customTimezones.filter(tz => tz.id !== timezoneId);
+    saveSettings();
+    const card = document.querySelector(`[data-timezone="${timezoneId}"]`);
+    if (card) {
+      card.remove();
+    }
+    showToast('Timezone removed');
+  } catch (error) {
+    console.error('Error removing timezone:', error);
+    showToast('Error removing timezone');
+  }
+}
+
+// Render custom timezone card
+function renderCustomTimezone(tzConfig) {
+  const clockGrid = document.getElementById('clock-grid');
+  const card = document.createElement('div');
+  card.className = `clock-card custom ${tzConfig.cardId}`;
+  card.setAttribute('data-timezone', tzConfig.cardId);
+  card.setAttribute('title', 'Click to copy time');
+  
+  card.innerHTML = `
+    <div class="day-night-indicator" id="${tzConfig.indicatorId}"></div>
+    <button class="remove-timezone" data-id="${tzConfig.cardId}" title="Remove timezone">×</button>
+    <div class="flag-icon">${tzConfig.flag}</div>
+    <div class="timezone-name">${tzConfig.name}</div>
+    <div class="time-display" id="${tzConfig.elementId}">--:--:--</div>
+    <div class="date-display" id="${tzConfig.dateId}">--</div>
+    <div class="timezone-info">
+      <div class="timezone-code">${tzConfig.timezone.split('/').pop()}</div>
+      <div class="timezone-offset" id="${tzConfig.offsetId}"></div>
+      <div class="time-difference" id="${tzConfig.differenceId}"></div>
+    </div>
+  `;
+  
+  clockGrid.appendChild(card);
+  
+  // Add event listeners
+  card.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('remove-timezone')) return;
+    const timeDisplay = document.getElementById(tzConfig.elementId);
+    const dateDisplay = document.getElementById(tzConfig.dateId);
+    const timeText = timeDisplay.textContent;
+    const dateText = dateDisplay.textContent;
+    const fullText = `${tzConfig.name}: ${timeText} ${dateText}`;
+    await copyToClipboard(fullText);
+  });
+  
+  // Remove button
+  const removeBtn = card.querySelector('.remove-timezone');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeCustomTimezone(tzConfig.cardId);
+    });
+  }
+  
+  // Update this timezone
+  updateTimezone(tzConfig);
+}
+
+// Update all timezones including custom ones
+function updateAllClocks() {
+  Object.values(timezones).forEach(updateTimezone);
+  customTimezones.forEach(updateTimezone);
 }
 
 // Apply settings to UI
@@ -480,6 +629,74 @@ function initEventListeners() {
       document.getElementById('shortcuts-help').classList.remove('active');
     }
   });
+  
+  // Add timezone button (header)
+  document.getElementById('add-timezone-btn').addEventListener('click', () => {
+    document.getElementById('timezone-panel').classList.add('active');
+    document.getElementById('timezone-search-input').focus();
+    displayTimezoneResults(popularTimezones);
+  });
+  
+  // Add timezone button (large button)
+  const addBtnLarge = document.getElementById('add-timezone-btn-large');
+  if (addBtnLarge) {
+    addBtnLarge.addEventListener('click', () => {
+      document.getElementById('timezone-panel').classList.add('active');
+      document.getElementById('timezone-search-input').focus();
+      displayTimezoneResults(popularTimezones);
+    });
+  }
+  
+  // Close timezone panel
+  document.getElementById('close-timezone-panel').addEventListener('click', () => {
+    document.getElementById('timezone-panel').classList.remove('active');
+  });
+  
+  // Close timezone panel on outside click
+  document.getElementById('timezone-panel').addEventListener('click', (e) => {
+    if (e.target.id === 'timezone-panel') {
+      document.getElementById('timezone-panel').classList.remove('active');
+    }
+  });
+  
+  // Timezone search
+  const searchInput = document.getElementById('timezone-search-input');
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    const results = searchTimezones(query);
+    displayTimezoneResults(results);
+  });
+  
+  // Display timezone search results
+  function displayTimezoneResults(results) {
+    const resultsContainer = document.getElementById('timezone-results');
+    resultsContainer.innerHTML = '';
+    
+    if (results.length === 0) {
+      resultsContainer.innerHTML = '<div class="no-results">No timezones found</div>';
+      return;
+    }
+    
+    results.forEach(tz => {
+      const item = document.createElement('div');
+      item.className = 'timezone-result-item';
+      item.innerHTML = `
+        <span class="timezone-flag">${tz.flag}</span>
+        <span class="timezone-name">${tz.name}</span>
+        <span class="timezone-code">${tz.timezone}</span>
+        <button class="add-timezone-btn" data-timezone='${JSON.stringify(tz)}'>Add</button>
+      `;
+      
+      const addBtn = item.querySelector('.add-timezone-btn');
+      addBtn.addEventListener('click', () => {
+        addCustomTimezone(tz);
+        document.getElementById('timezone-panel').classList.remove('active');
+        searchInput.value = '';
+      });
+      
+      resultsContainer.appendChild(item);
+    });
+  }
 }
 
 // Initialize and start updating

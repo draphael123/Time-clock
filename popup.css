@@ -92,6 +92,51 @@ header h1 {
   transform: scale(0.95);
 }
 
+.add-timezone-header-btn {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+  font-weight: bold;
+  font-size: 18px;
+  min-width: 32px;
+}
+
+.add-timezone-header-btn:hover {
+  background: rgba(102, 126, 234, 0.3) !important;
+  border-color: #5568d3 !important;
+}
+
+.add-timezone-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.add-timezone-btn-large {
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.add-timezone-btn-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.add-timezone-btn-large:active {
+  transform: translateY(0);
+}
+
 .loading-indicator {
   height: 3px;
   background: linear-gradient(90deg, transparent, #667eea, transparent);
@@ -510,6 +555,185 @@ header h1 {
 .close-shortcuts:hover {
   background: #5568d3;
   transform: translateY(-2px);
+}
+
+/* Timezone Panel */
+.timezone-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.timezone-panel.active {
+  display: flex;
+}
+
+.timezone-panel-content {
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  transition: background 0.3s ease;
+}
+
+.timezone-panel-content h3 {
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  font-size: 24px;
+  transition: color 0.3s ease;
+}
+
+.timezone-search {
+  margin-bottom: 20px;
+}
+
+#timezone-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+#timezone-search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.timezone-results {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 15px;
+}
+
+.timezone-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: rgba(102, 126, 234, 0.05);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.2s ease;
+}
+
+.timezone-result-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: translateX(5px);
+}
+
+.timezone-flag {
+  font-size: 24px;
+}
+
+.timezone-result-item .timezone-name {
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.timezone-result-item .timezone-code {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.add-timezone-btn {
+  padding: 6px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.add-timezone-btn:hover {
+  background: #5568d3;
+  transform: scale(1.05);
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.close-timezone-panel {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.close-timezone-panel:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+/* Custom timezone card styles */
+.clock-card.custom {
+  position: relative;
+}
+
+.remove-timezone {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff4444;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  line-height: 1;
+  padding: 0;
+}
+
+.remove-timezone:hover {
+  background: rgba(255, 0, 0, 0.2);
+  border-color: #ff4444;
+  transform: scale(1.1);
 }
 
 /* Animation for time updates */
