@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import LiveChat from './components/LiveChat'
 
 export default function Home() {
   const [times, setTimes] = useState({
@@ -1080,6 +1081,9 @@ export default function Home() {
           ↑
         </button>
       )}
+
+      {/* Live Chat Widget */}
+      <LiveChat />
 
       <style jsx>{`
         /* Animated Background */
