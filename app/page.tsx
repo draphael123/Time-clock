@@ -1818,8 +1818,8 @@ export default function Home() {
           }
         }
 
-        /* Dark Mode Toggle */
-        .dark-mode-toggle {
+        /* Settings Toggle Button */
+        .settings-toggle-btn {
           position: fixed;
           top: 20px;
           right: 20px;
@@ -1839,24 +1839,24 @@ export default function Home() {
           justify-content: center;
         }
 
-        .dark-mode-toggle:hover {
-          transform: scale(1.15);
+        .settings-toggle-btn:hover {
+          transform: scale(1.15) rotate(90deg);
           background: rgba(255, 255, 255, 1);
           box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
         }
 
-        .dark-mode-toggle:active {
-          transform: scale(1.05);
+        .settings-toggle-btn:active {
+          transform: scale(1.05) rotate(90deg);
         }
 
-        /* Dark mode styles for toggle button */
-        :global(.dark) .dark-mode-toggle {
+        /* Dark mode styles for settings button */
+        :global(.dark) .settings-toggle-btn {
           background: rgba(26, 26, 26, 0.9);
           border-color: rgba(255, 255, 255, 0.3);
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        :global(.dark) .dark-mode-toggle:hover {
+        :global(.dark) .settings-toggle-btn:hover {
           background: rgba(26, 26, 26, 1);
           box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
         }
@@ -3052,7 +3052,7 @@ export default function Home() {
             display: flex;
           }
 
-          .dark-mode-toggle {
+          .settings-toggle-btn {
             top: 10px;
             right: 10px;
             width: 40px;
