@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import LiveChat from './components/LiveChat'
+import SettingsPanel from './components/SettingsPanel'
 
 export default function Home() {
   const [times, setTimes] = useState({
@@ -20,6 +21,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState('')
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [stats] = useState({
     timezones: 24,
     users: '1000+',
@@ -267,15 +269,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Dark Mode Toggle */}
+      {/* Settings Button */}
       <button 
-        onClick={toggleDarkMode} 
-        className="dark-mode-toggle"
-        aria-label="Toggle dark mode"
-        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        onClick={() => setShowSettings(true)} 
+        className="settings-toggle-btn"
+        aria-label="Open settings"
+        title="Open settings"
       >
-        {darkMode ? '☀️' : '🌙'}
+        ⚙️
       </button>
+
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        darkMode={darkMode}
+        onDarkModeChange={toggleDarkMode}
+      />
 
       {/* Loading Spinner */}
       {loading && (
