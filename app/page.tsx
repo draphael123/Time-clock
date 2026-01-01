@@ -64,7 +64,7 @@ export default function Home() {
   useEffect(() => {
     const updateTimes = () => {
       const now = new Date()
-      const timeOptions = {
+      const timeOptions: Intl.DateTimeFormatOptions = {
         hour12: true,
         hour: '2-digit',
         minute: '2-digit',

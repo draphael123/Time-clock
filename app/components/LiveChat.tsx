@@ -80,18 +80,19 @@ export default function LiveChat() {
 
       // Initialize Firebase if not already initialized
       let app
-      if (!firebase.default.apps.length) {
+      try {
+        app = firebase.default.getApp()
+      } catch (e) {
         app = firebase.default.initializeApp(firebaseConfig)
-      } else {
-        app = firebase.default.app()
       }
 
-      const database = (await import('firebase/database')).default
-      const db = database.getDatabase(app)
+      const { getDatabase } = await import('firebase/database')
+      const db = getDatabase(app)
 
       // Load existing messages
-      const messagesRef = database.ref(db, 'messages')
-      const snapshot = await database.get(messagesRef)
+      const { ref, get, onChildAdded } = await import('firebase/database')
+      const messagesRef = ref(db, 'messages')
+      const snapshot = await get(messagesRef)
       if (snapshot.exists()) {
         const messagesData = snapshot.val()
         const messagesArray = Object.values(messagesData) as Message[]
@@ -100,7 +101,7 @@ export default function LiveChat() {
       }
 
       // Listen for new messages
-      database.onChildAdded(messagesRef, (snapshot) => {
+      onChildAdded(messagesRef, (snapshot) => {
         const message = snapshot.val()
         setMessages((prev) => {
           // Avoid duplicates
@@ -159,11 +160,17 @@ export default function LiveChat() {
       if (isConnected) {
         // Send to Firebase
         const firebase = await import('firebase/app')
-        const database = (await import('firebase/database')).default
-        const app = firebase.default.app()
-        const db = database.getDatabase(app)
-        const messagesRef = database.ref(db, 'messages')
-        await database.push(messagesRef, message)
+        const { getDatabase, ref, push } = await import('firebase/database')
+        let app
+        try {
+          app = firebase.default.getApp()
+        } catch (e) {
+          // App not initialized, use fallback
+          throw new Error('Firebase not initialized')
+        }
+        const db = getDatabase(app)
+        const messagesRef = ref(db, 'messages')
+        await push(messagesRef, message)
       } else {
         // Fallback: Save to localStorage and state
         saveMessageToStorage(message)
