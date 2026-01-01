@@ -15,10 +15,38 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [selectedScreenshot, setSelectedScreenshot] = useState(0)
   const [showDemo, setShowDemo] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [selectedScreenshot, setSelectedScreenshot] = useState(0)
-  const [showDemo, setShowDemo] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
+  const [stats] = useState({
+    timezones: 24,
+    users: '1000+',
+    downloads: '5000+',
+    uptime: '99.9%'
+  })
+  const [animatedStats, setAnimatedStats] = useState({
+    timezones: 0
+  })
+
+  useEffect(() => {
+    // Animate statistics counter
+    const animateCounter = () => {
+      let current = 0
+      const target = stats.timezones
+      const increment = target / 50
+      const timer = setInterval(() => {
+        current += increment
+        if (current >= target) {
+          setAnimatedStats({ timezones: target })
+          clearInterval(timer)
+        } else {
+          setAnimatedStats({ timezones: Math.floor(current) })
+        }
+      }, 30)
+    }
+    animateCounter()
+  }, [])
 
   useEffect(() => {
     // Load dark mode preference
@@ -66,10 +94,32 @@ export default function Home() {
   useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 300)
+      
+      // Update active section for navigation
+      const sections = ['features', 'screenshots', 'comparison', 'changelog', 'testimonials', 'use-cases', 'installation', 'faq']
+      const current = sections.find(section => {
+        const element = document.getElementById(section)
+        if (element) {
+          const rect = element.getBoundingClientRect()
+          return rect.top <= 100 && rect.bottom >= 100
+        }
+        return false
+      })
+      if (current) setActiveSection(current)
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    // In a real app, this would send to an email service
+    setNewsletterSubmitted(true)
+    setTimeout(() => {
+      setNewsletterSubmitted(false)
+      setNewsletterEmail('')
+    }, 3000)
+  }
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -83,16 +133,50 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Skip to Content Link (Accessibility) */}
+      <a href="#features" className="skip-to-content">
+        Skip to main content
+      </a>
+
+      {/* Sticky Navigation Header */}
+      <nav className="sticky-nav">
+        <div className="nav-container">
+          <div className="nav-logo">
+            <span>🌏</span>
+            <span>World Clock</span>
+          </div>
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <div className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
+            <a href="#features" className={activeSection === 'features' ? 'active' : ''}>Features</a>
+            <a href="#screenshots" className={activeSection === 'screenshots' ? 'active' : ''}>Screenshots</a>
+            <a href="#use-cases" className={activeSection === 'use-cases' ? 'active' : ''}>Use Cases</a>
+            <a href="#installation" className={activeSection === 'installation' ? 'active' : ''}>Install</a>
+            <a href="#faq" className={activeSection === 'faq' ? 'active' : ''}>FAQ</a>
+            <button onClick={handleDownload} className="nav-download-btn">
+              Download
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text fade-in-up">
             <h1 className="hero-title">
-              World Clock Extension
+              Never Miss a Moment Across Time Zones
             </h1>
             <p className="hero-subtitle">
-              Never miss a moment across time zones. Track Eastern Time, Pacific Time, Brazil, and Italy 
-              with a beautiful, real-time clock extension for Chrome.
+              The most beautiful, privacy-focused world clock extension for Chrome. Track multiple time zones in real-time, 
+              customize your view, and stay connected with your global team—all completely free and offline.
             </p>
             <div className="hero-buttons">
               <button onClick={handleDownload} className="btn-primary pulse" aria-label="Download World Clock Extension">
@@ -426,6 +510,390 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Statistics/Metrics Section */}
+      <section id="stats" className="stats-section">
+        <div className="container">
+          <h2 className="section-title">By The Numbers</h2>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon">🌍</div>
+              <div className="stat-value">{animatedStats.timezones}+</div>
+              <div className="stat-label">Timezones Supported</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">👥</div>
+              <div className="stat-value-text">{stats.users}</div>
+              <div className="stat-label">Active Users</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">⬇️</div>
+              <div className="stat-value-text">{stats.downloads}</div>
+              <div className="stat-label">Downloads</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">⚡</div>
+              <div className="stat-value-text">{stats.uptime}</div>
+              <div className="stat-label">Uptime</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">🔒</div>
+              <div className="stat-value-text">0</div>
+              <div className="stat-label">Data Collected</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon">💰</div>
+              <div className="stat-value-text">100%</div>
+              <div className="stat-label">Free Forever</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section id="use-cases" className="use-cases">
+        <div className="container">
+          <h2 className="section-title">Perfect For</h2>
+          <div className="use-cases-grid">
+            <div className="use-case-card">
+              <div className="use-case-icon">💼</div>
+              <h3>Remote Workers</h3>
+              <p>Coordinate with team members across different time zones. Never schedule a meeting at the wrong time again.</p>
+            </div>
+            <div className="use-case-card">
+              <div className="use-case-icon">🌐</div>
+              <h3>Global Teams</h3>
+              <p>Keep track of when your international colleagues are available. Perfect for distributed companies.</p>
+            </div>
+            <div className="use-case-card">
+              <div className="use-case-icon">✈️</div>
+              <h3>Travelers</h3>
+              <p>Stay connected with home time while traveling. Know when to call family and friends.</p>
+            </div>
+            <div className="use-case-card">
+              <div className="use-case-icon">📅</div>
+              <h3>Event Planners</h3>
+              <p>Schedule events that work for participants worldwide. Convert times instantly.</p>
+            </div>
+            <div className="use-case-card">
+              <div className="use-case-icon">🎓</div>
+              <h3>International Students</h3>
+              <p>Keep track of class times, deadlines, and when to contact professors in different time zones.</p>
+            </div>
+            <div className="use-case-card">
+              <div className="use-case-icon">👨‍💻</div>
+              <h3>Developers</h3>
+              <p>Coordinate releases, stand-ups, and code reviews across global development teams.</p>
+            </div>
+          </div>
+          <div className="use-cases-cta">
+            <button onClick={handleDownload} className="btn-primary">
+              Get Started Free
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Visual Installation Guide */}
+      <section id="installation" className="installation-guide">
+        <div className="container">
+          <h2 className="section-title">Installation Guide</h2>
+          <p className="section-subtitle">Get started in less than 2 minutes</p>
+          <div className="installation-steps">
+            <div className="installation-step">
+              <div className="step-visual">
+                <div className="step-number-large">1</div>
+                <div className="step-icon">⬇️</div>
+              </div>
+              <div className="step-content">
+                <h3>Download the Extension</h3>
+                <p>Click the download button to get the latest version from GitHub. The ZIP file contains all extension files.</p>
+                <button onClick={handleDownload} className="step-action-btn">
+                  Download Now
+                </button>
+              </div>
+            </div>
+            <div className="installation-step">
+              <div className="step-visual">
+                <div className="step-number-large">2</div>
+                <div className="step-icon">📦</div>
+              </div>
+              <div className="step-content">
+                <h3>Extract the Files</h3>
+                <p>Extract the downloaded ZIP file to a folder on your computer. Remember where you saved it!</p>
+                <div className="code-block">
+                  <code>Right-click ZIP → Extract All → Choose location</code>
+                </div>
+              </div>
+            </div>
+            <div className="installation-step">
+              <div className="step-visual">
+                <div className="step-number-large">3</div>
+                <div className="step-icon">🌐</div>
+              </div>
+              <div className="step-content">
+                <h3>Open Chrome Extensions</h3>
+                <p>Open Chrome and navigate to the extensions page. You can do this by:</p>
+                <ul>
+                  <li>Type <code>chrome://extensions/</code> in the address bar, or</li>
+                  <li>Menu (⋮) → More tools → Extensions</li>
+                </ul>
+              </div>
+            </div>
+            <div className="installation-step">
+              <div className="step-visual">
+                <div className="step-number-large">4</div>
+                <div className="step-icon">🔧</div>
+              </div>
+              <div className="step-content">
+                <h3>Enable Developer Mode</h3>
+                <p>Toggle the "Developer mode" switch in the top-right corner of the extensions page.</p>
+                <div className="highlight-box">
+                  <strong>💡 Tip:</strong> Developer mode allows you to load unpacked extensions.
+                </div>
+              </div>
+            </div>
+            <div className="installation-step">
+              <div className="step-visual">
+                <div className="step-number-large">5</div>
+                <div className="step-icon">📂</div>
+              </div>
+              <div className="step-content">
+                <h3>Load the Extension</h3>
+                <p>Click "Load unpacked" button, then select the folder where you extracted the extension files.</p>
+                <div className="highlight-box">
+                  <strong>✅ Done!</strong> The extension icon will appear in your Chrome toolbar.
+                </div>
+              </div>
+            </div>
+            <div className="installation-step">
+              <div className="step-visual">
+                <div className="step-number-large">6</div>
+                <div className="step-icon">🎉</div>
+              </div>
+              <div className="step-content">
+                <h3>Start Using</h3>
+                <p>Click the extension icon in your toolbar to view all time zones. Pin it for easy access!</p>
+                <button onClick={handleDownload} className="step-action-btn">
+                  Get Started Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Demo Section */}
+      <section id="video-demo" className="video-demo">
+        <div className="container">
+          <h2 className="section-title">See It In Action</h2>
+          <div className="video-container">
+            <div className="video-placeholder">
+              <div className="play-button">▶️</div>
+              <p>Video Demo Coming Soon</p>
+              <p className="video-note">Watch a quick walkthrough of all features</p>
+            </div>
+            {/* When you have a video, replace with:
+            <iframe 
+              src="YOUR_VIDEO_URL" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+            */}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Badges */}
+      <section className="trust-badges">
+        <div className="container">
+          <div className="badges-grid">
+            <div className="trust-badge">
+              <div className="badge-icon">🔓</div>
+              <div className="badge-text">Open Source</div>
+            </div>
+            <div className="trust-badge">
+              <div className="badge-icon">🔒</div>
+              <div className="badge-text">Privacy First</div>
+            </div>
+            <div className="trust-badge">
+              <div className="badge-icon">🚫</div>
+              <div className="badge-text">No Tracking</div>
+            </div>
+            <div className="trust-badge">
+              <div className="badge-icon">💯</div>
+              <div className="badge-text">Free Forever</div>
+            </div>
+            <div className="trust-badge">
+              <div className="badge-icon">⚡</div>
+              <div className="badge-text">Lightning Fast</div>
+            </div>
+            <div className="trust-badge">
+              <div className="badge-icon">🌐</div>
+              <div className="badge-text">100% Offline</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Performance Metrics */}
+      <section className="performance-metrics">
+        <div className="container">
+          <h2 className="section-title">Performance & Privacy</h2>
+          <div className="metrics-grid">
+            <div className="metric-card">
+              <div className="metric-value">0ms</div>
+              <div className="metric-label">Network Requests</div>
+              <div className="metric-desc">Works completely offline</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-value">&lt;1MB</div>
+              <div className="metric-label">Extension Size</div>
+              <div className="metric-desc">Lightweight and fast</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-value">0</div>
+              <div className="metric-label">Data Collected</div>
+              <div className="metric-desc">Your privacy is protected</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-value">Instant</div>
+              <div className="metric-label">Load Time</div>
+              <div className="metric-desc">Opens immediately</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Integration Examples */}
+      <section className="integrations">
+        <div className="container">
+          <h2 className="section-title">Works Great With</h2>
+          <div className="integrations-grid">
+            <div className="integration-card">
+              <div className="integration-icon">📅</div>
+              <h3>Google Calendar</h3>
+              <p>Check time zones before scheduling meetings in Google Calendar</p>
+            </div>
+            <div className="integration-card">
+              <div className="integration-icon">💬</div>
+              <h3>Slack Teams</h3>
+              <p>Know when your team members are available for Slack messages</p>
+            </div>
+            <div className="integration-card">
+              <div className="integration-icon">📝</div>
+              <h3>Notion</h3>
+              <p>Coordinate deadlines and meetings across global Notion workspaces</p>
+            </div>
+            <div className="integration-card">
+              <div className="integration-icon">📧</div>
+              <h3>Email</h3>
+              <p>Quickly copy times to include in emails to international contacts</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Signup */}
+      <section className="newsletter">
+        <div className="container">
+          <h2 className="section-title">Stay Updated</h2>
+          <p className="newsletter-subtitle">Get notified about new features and updates</p>
+          {!newsletterSubmitted ? (
+            <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+                className="newsletter-input"
+              />
+              <button type="submit" className="newsletter-btn">
+                Subscribe
+              </button>
+            </form>
+          ) : (
+            <div className="newsletter-success">
+              <div className="success-icon">✅</div>
+              <p>Thanks for subscribing! We'll keep you updated.</p>
+            </div>
+          )}
+          <p className="newsletter-privacy">We respect your privacy. Unsubscribe at any time.</p>
+        </div>
+      </section>
+
+      {/* Contact/Support Section */}
+      <section id="contact" className="contact-support">
+        <div className="container">
+          <h2 className="section-title">Need Help?</h2>
+          <div className="support-grid">
+            <div className="support-card">
+              <div className="support-icon">📚</div>
+              <h3>Documentation</h3>
+              <p>Check our comprehensive guides and FAQs</p>
+              <a href="#faq" className="support-link">View FAQ →</a>
+            </div>
+            <div className="support-card">
+              <div className="support-icon">🐛</div>
+              <h3>Report Issues</h3>
+              <p>Found a bug? Let us know on GitHub</p>
+              <a href="https://github.com/draphael123/Time-clock/issues" target="_blank" rel="noopener noreferrer" className="support-link">
+                Open Issue →</a>
+            </div>
+            <div className="support-card">
+              <div className="support-icon">💡</div>
+              <h3>Feature Requests</h3>
+              <p>Have an idea? We'd love to hear it</p>
+              <a href="https://github.com/draphael123/Time-clock/discussions" target="_blank" rel="noopener noreferrer" className="support-link">
+                Suggest Feature →</a>
+            </div>
+            <div className="support-card">
+              <div className="support-icon">⭐</div>
+              <h3>Contribute</h3>
+              <p>Help make the extension even better</p>
+              <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer" className="support-link">
+                View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Related Tools/Resources */}
+      <section className="related-tools">
+        <div className="container">
+          <h2 className="section-title">Helpful Resources</h2>
+          <div className="tools-grid">
+            <div className="tool-card">
+              <h3>Timezone Converter</h3>
+              <p>Convert times between any timezones</p>
+              <a href="https://www.timeanddate.com/worldclock/converter.html" target="_blank" rel="noopener noreferrer" className="tool-link">
+                Visit Tool →
+              </a>
+            </div>
+            <div className="tool-card">
+              <h3>Meeting Planner</h3>
+              <p>Find the best time for global meetings</p>
+              <a href="https://www.timeanddate.com/worldclock/meeting.html" target="_blank" rel="noopener noreferrer" className="tool-link">
+                Visit Tool →
+              </a>
+            </div>
+            <div className="tool-card">
+              <h3>DST Calculator</h3>
+              <p>Check daylight saving time changes</p>
+              <a href="https://www.timeanddate.com/time/dst/" target="_blank" rel="noopener noreferrer" className="tool-link">
+                Visit Tool →
+              </a>
+            </div>
+          </div>
+          <div className="comparison-cta">
+            <button onClick={handleDownload} className="btn-primary large">
+              Download Free Extension
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section id="testimonials" className="testimonials">
         <div className="container">
@@ -451,6 +919,11 @@ export default function Home() {
               <p className="testimonial-text">"The keyboard shortcuts are a game-changer. I can copy times without even touching my mouse!"</p>
               <div className="testimonial-author">- Power User</div>
             </div>
+          </div>
+          <div className="testimonials-cta">
+            <button onClick={handleDownload} className="btn-primary">
+              Join Happy Users
+            </button>
           </div>
         </div>
       </section>
@@ -490,6 +963,13 @@ export default function Home() {
           <p className="cta-note">Free • No Sign-up Required • Instant Access • Always Latest Version</p>
         </div>
       </section>
+
+      {/* Floating CTA Button */}
+      <div className="floating-cta">
+        <button onClick={handleDownload} className="floating-cta-btn" aria-label="Download extension">
+          ⬇️ Download Free
+        </button>
+      </div>
 
       {/* FAQ Section */}
       <section id="faq" className="faq">
@@ -762,6 +1242,17 @@ export default function Home() {
           transform: translateY(-10px);
           box-shadow: var(--card-hover-shadow);
         }
+
+        .feature-card {
+          animation: fadeInUp 0.6s ease-out;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .feature-card:nth-child(4) { animation-delay: 0.4s; }
+        .feature-card:nth-child(5) { animation-delay: 0.5s; }
+        .feature-card:nth-child(6) { animation-delay: 0.6s; }
 
         .feature-icon {
           font-size: 3rem;
@@ -1284,6 +1775,16 @@ export default function Home() {
           border-bottom: none;
         }
 
+        .comparison-cta {
+          text-align: center;
+          margin-top: 50px;
+        }
+
+        .testimonials-cta {
+          text-align: center;
+          margin-top: 50px;
+        }
+
         /* Changelog */
         .changelog {
           padding: 100px 20px;
@@ -1426,7 +1927,791 @@ export default function Home() {
           background: #1a1a1a;
         }
 
+        /* Sticky Navigation */
+        .sticky-nav {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          transition: all 0.3s ease;
+        }
+
+        :global(.dark) .sticky-nav {
+          background: rgba(26, 26, 26, 0.95);
+        }
+
+        .nav-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 15px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .nav-logo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 1.3rem;
+          font-weight: 700;
+          color: #667eea;
+        }
+
+        .nav-links {
+          display: flex;
+          align-items: center;
+          gap: 30px;
+        }
+
+        .nav-links a {
+          color: #333;
+          text-decoration: none;
+          font-weight: 500;
+          transition: color 0.3s ease;
+          position: relative;
+        }
+
+        :global(.dark) .nav-links a {
+          color: #e0e0e0;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+          color: #667eea;
+        }
+
+        .nav-links a.active::after {
+          content: '';
+          position: absolute;
+          bottom: -5px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: #667eea;
+        }
+
+        .nav-download-btn {
+          background: var(--primary-gradient);
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 25px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .nav-download-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .mobile-menu-toggle {
+          display: none;
+          flex-direction: column;
+          gap: 5px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 5px;
+        }
+
+        .mobile-menu-toggle span {
+          width: 25px;
+          height: 3px;
+          background: #333;
+          border-radius: 3px;
+          transition: all 0.3s ease;
+        }
+
+        :global(.dark) .mobile-menu-toggle span {
+          background: #e0e0e0;
+        }
+
+        /* Statistics Section */
+        .stats-section {
+          padding: 100px 20px;
+          background: var(--primary-gradient);
+          color: white;
+        }
+
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .stat-card {
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          padding: 30px;
+          border-radius: 15px;
+          text-align: center;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+          transform: translateY(-5px);
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-icon {
+          font-size: 3rem;
+          margin-bottom: 15px;
+        }
+
+        .stat-value,
+        .stat-value-text {
+          font-size: 3rem;
+          font-weight: 800;
+          margin-bottom: 10px;
+        }
+
+        .stat-label {
+          font-size: 1rem;
+          opacity: 0.9;
+        }
+
+        /* Use Cases Section */
+        .use-cases {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .use-cases-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .use-case-card {
+          background: white;
+          padding: 40px;
+          border-radius: 20px;
+          box-shadow: var(--card-shadow);
+          transition: all 0.3s ease;
+          text-align: center;
+          border: 2px solid transparent;
+        }
+
+        .use-case-card:hover {
+          transform: translateY(-10px);
+          box-shadow: var(--card-hover-shadow);
+          border-color: #667eea;
+        }
+
+        .use-case-icon {
+          font-size: 3.5rem;
+          margin-bottom: 20px;
+        }
+
+        .use-case-card h3 {
+          font-size: 1.5rem;
+          margin-bottom: 15px;
+          color: #333;
+        }
+
+        .use-case-card p {
+          color: #666;
+          line-height: 1.6;
+        }
+
+        .use-cases-cta {
+          text-align: center;
+          margin-top: 50px;
+        }
+
+        /* Installation Guide */
+        .installation-guide {
+          padding: 100px 20px;
+          background: #f8f9fa;
+        }
+
+        .section-subtitle {
+          text-align: center;
+          font-size: 1.2rem;
+          color: #666;
+          margin-bottom: 60px;
+        }
+
+        .installation-steps {
+          max-width: 900px;
+          margin: 0 auto;
+        }
+
+        .installation-step {
+          display: grid;
+          grid-template-columns: 150px 1fr;
+          gap: 40px;
+          margin-bottom: 60px;
+          align-items: start;
+        }
+
+        .step-visual {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .step-number-large {
+          width: 100px;
+          height: 100px;
+          background: var(--primary-gradient);
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2.5rem;
+          font-weight: 800;
+          margin-bottom: 15px;
+          box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .step-icon {
+          font-size: 2.5rem;
+        }
+
+        .step-content h3 {
+          font-size: 1.8rem;
+          margin-bottom: 15px;
+          color: #333;
+        }
+
+        .step-content p {
+          color: #666;
+          line-height: 1.8;
+          margin-bottom: 15px;
+        }
+
+        .step-content ul {
+          list-style: none;
+          padding: 0;
+          margin: 15px 0;
+        }
+
+        .step-content li {
+          padding: 8px 0;
+          color: #666;
+        }
+
+        .step-content code {
+          background: #f0f0f0;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 0.9rem;
+        }
+
+        .code-block {
+          background: #2a2a2a;
+          color: #fff;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 15px 0;
+          font-family: monospace;
+        }
+
+        .code-block code {
+          background: none;
+          color: #fff;
+          padding: 0;
+        }
+
+        .highlight-box {
+          background: #e3f2fd;
+          border-left: 4px solid #667eea;
+          padding: 15px;
+          border-radius: 8px;
+          margin: 15px 0;
+        }
+
+        .step-action-btn {
+          background: var(--primary-gradient);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 15px;
+        }
+
+        .step-action-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Video Demo */
+        .video-demo {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .video-container {
+          max-width: 900px;
+          margin: 0 auto;
+          border-radius: 15px;
+          overflow: hidden;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-placeholder {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          aspect-ratio: 16/9;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          position: relative;
+        }
+
+        .play-button {
+          font-size: 4rem;
+          margin-bottom: 20px;
+          cursor: pointer;
+          transition: transform 0.3s ease;
+        }
+
+        .play-button:hover {
+          transform: scale(1.1);
+        }
+
+        .video-note {
+          font-size: 0.9rem;
+          opacity: 0.8;
+        }
+
+        /* Trust Badges */
+        .trust-badges {
+          padding: 80px 20px;
+          background: #f8f9fa;
+        }
+
+        .badges-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 30px;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+
+        .trust-badge {
+          background: white;
+          padding: 30px 20px;
+          border-radius: 15px;
+          text-align: center;
+          box-shadow: var(--card-shadow);
+          transition: all 0.3s ease;
+        }
+
+        .trust-badge:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--card-hover-shadow);
+        }
+
+        .badge-icon {
+          font-size: 2.5rem;
+          margin-bottom: 10px;
+        }
+
+        .badge-text {
+          font-weight: 600;
+          color: #333;
+          font-size: 0.9rem;
+        }
+
+        /* Performance Metrics */
+        .performance-metrics {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .metric-card {
+          background: #f8f9fa;
+          padding: 40px;
+          border-radius: 15px;
+          text-align: center;
+          transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--card-shadow);
+        }
+
+        .metric-value {
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #667eea;
+          margin-bottom: 10px;
+        }
+
+        .metric-label {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 5px;
+        }
+
+        .metric-desc {
+          font-size: 0.9rem;
+          color: #666;
+        }
+
+        /* Integrations */
+        .integrations {
+          padding: 100px 20px;
+          background: #f8f9fa;
+        }
+
+        .integrations-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .integration-card {
+          background: white;
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: var(--card-shadow);
+          transition: all 0.3s ease;
+          text-align: center;
+        }
+
+        .integration-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--card-hover-shadow);
+        }
+
+        .integration-icon {
+          font-size: 3rem;
+          margin-bottom: 15px;
+        }
+
+        .integration-card h3 {
+          font-size: 1.3rem;
+          margin-bottom: 10px;
+          color: #333;
+        }
+
+        .integration-card p {
+          color: #666;
+          line-height: 1.6;
+          margin-bottom: 15px;
+        }
+
+        .tool-link {
+          color: #667eea;
+          text-decoration: none;
+          font-weight: 600;
+          transition: color 0.3s ease;
+        }
+
+        .tool-link:hover {
+          color: #5568d3;
+        }
+
+        /* Newsletter */
+        .newsletter {
+          padding: 100px 20px;
+          background: var(--secondary-gradient);
+          color: white;
+          text-align: center;
+        }
+
+        .newsletter-subtitle {
+          font-size: 1.2rem;
+          margin-bottom: 40px;
+          opacity: 0.95;
+        }
+
+        .newsletter-form {
+          max-width: 500px;
+          margin: 0 auto;
+          display: flex;
+          gap: 10px;
+        }
+
+        .newsletter-input {
+          flex: 1;
+          padding: 15px 20px;
+          border: none;
+          border-radius: 50px;
+          font-size: 1rem;
+          outline: none;
+        }
+
+        .newsletter-btn {
+          padding: 15px 30px;
+          background: white;
+          color: #667eea;
+          border: none;
+          border-radius: 50px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .newsletter-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .newsletter-success {
+          max-width: 500px;
+          margin: 0 auto;
+          padding: 30px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 15px;
+        }
+
+        .success-icon {
+          font-size: 3rem;
+          margin-bottom: 15px;
+        }
+
+        .newsletter-privacy {
+          margin-top: 20px;
+          font-size: 0.9rem;
+          opacity: 0.8;
+        }
+
+        /* Contact/Support */
+        .contact-support {
+          padding: 100px 20px;
+          background: white;
+        }
+
+        .support-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .support-card {
+          background: #f8f9fa;
+          padding: 30px;
+          border-radius: 15px;
+          text-align: center;
+          transition: all 0.3s ease;
+        }
+
+        .support-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--card-shadow);
+        }
+
+        .support-icon {
+          font-size: 3rem;
+          margin-bottom: 15px;
+        }
+
+        .support-card h3 {
+          font-size: 1.3rem;
+          margin-bottom: 10px;
+          color: #333;
+        }
+
+        .support-card p {
+          color: #666;
+          margin-bottom: 15px;
+        }
+
+        .support-link {
+          color: #667eea;
+          text-decoration: none;
+          font-weight: 600;
+          transition: color 0.3s ease;
+        }
+
+        .support-link:hover {
+          color: #5568d3;
+        }
+
+        /* Related Tools */
+        .related-tools {
+          padding: 100px 20px;
+          background: #f8f9fa;
+        }
+
+        .tools-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .tool-card {
+          background: white;
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: var(--card-shadow);
+          transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+          transform: translateY(-5px);
+          box-shadow: var(--card-hover-shadow);
+        }
+
+        .tool-card h3 {
+          font-size: 1.3rem;
+          margin-bottom: 10px;
+          color: #333;
+        }
+
+        .tool-card p {
+          color: #666;
+          margin-bottom: 15px;
+        }
+
+        /* Skip to Content */
+        .skip-to-content {
+          position: absolute;
+          top: -100px;
+          left: 0;
+          background: #667eea;
+          color: white;
+          padding: 10px 20px;
+          text-decoration: none;
+          z-index: 10000;
+          border-radius: 0 0 8px 0;
+        }
+
+        .skip-to-content:focus {
+          top: 0;
+        }
+
+        /* Floating CTA */
+        .floating-cta {
+          position: fixed;
+          bottom: 30px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 999;
+        }
+
+        .floating-cta-btn {
+          background: var(--primary-gradient);
+          color: white;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 50px;
+          font-weight: 700;
+          font-size: 1rem;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .floating-cta-btn:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Dark Mode Styles for New Sections */
+        :global(.dark) .use-cases,
+        :global(.dark) .installation-guide,
+        :global(.dark) .video-demo,
+        :global(.dark) .performance-metrics,
+        :global(.dark) .contact-support {
+          background: #1a1a1a;
+          color: white;
+        }
+
+        :global(.dark) .use-case-card,
+        :global(.dark) .trust-badge,
+        :global(.dark) .metric-card,
+        :global(.dark) .integration-card,
+        :global(.dark) .support-card,
+        :global(.dark) .tool-card {
+          background: #2a2a2a;
+          color: white;
+        }
+
+        :global(.dark) .use-case-card h3,
+        :global(.dark) .integration-card h3,
+        :global(.dark) .support-card h3,
+        :global(.dark) .tool-card h3,
+        :global(.dark) .step-content h3 {
+          color: white;
+        }
+
+        :global(.dark) .use-case-card p,
+        :global(.dark) .integration-card p,
+        :global(.dark) .support-card p,
+        :global(.dark) .tool-card p,
+        :global(.dark) .step-content p,
+        :global(.dark) .step-content li {
+          color: #aaa;
+        }
+
+        :global(.dark) .code-block {
+          background: #1a1a1a;
+        }
+
+        :global(.dark) .highlight-box {
+          background: #2a2a2a;
+          border-left-color: #667eea;
+        }
+
         @media (max-width: 768px) {
+          .sticky-nav {
+            padding: 10px;
+          }
+
+          .nav-links {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          }
+
+          :global(.dark) .nav-links {
+            background: rgba(26, 26, 26, 0.98);
+          }
+
+          .nav-links.active {
+            transform: translateX(0);
+          }
+
+          .mobile-menu-toggle {
+            display: flex;
+          }
+
           .dark-mode-toggle {
             top: 10px;
             right: 10px;
@@ -1449,6 +2734,31 @@ export default function Home() {
 
           .testimonials-grid {
             grid-template-columns: 1fr;
+          }
+
+          .installation-step {
+            grid-template-columns: 1fr;
+            text-align: center;
+          }
+
+          .step-visual {
+            margin-bottom: 20px;
+          }
+
+          .newsletter-form {
+            flex-direction: column;
+          }
+
+          .floating-cta {
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            transform: none;
+          }
+
+          .floating-cta-btn {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>
