@@ -133,6 +133,25 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Animated Background Particles */}
+      <div className="animated-background">
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+        <div className="particle"></div>
+      </div>
+
+      {/* Gradient Orbs */}
+      <div className="gradient-orb orb-1"></div>
+      <div className="gradient-orb orb-2"></div>
+      <div className="gradient-orb orb-3"></div>
+
       {/* Skip to Content Link (Accessibility) */}
       <a href="#features" className="skip-to-content">
         Skip to main content
@@ -171,23 +190,34 @@ export default function Home() {
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text fade-in-up">
+            <div className="hero-badge">
+              <span className="badge-icon">✨</span>
+              <span>560+ Timezones Available</span>
+            </div>
             <h1 className="hero-title">
-              Never Miss a Moment Across Time Zones
+              <span className="title-gradient">Never Miss a Moment</span>
+              <br />
+              <span className="title-accent">Across Time Zones</span>
             </h1>
             <p className="hero-subtitle">
               The most beautiful, privacy-focused world clock extension for Chrome. Track multiple time zones in real-time, 
               customize your view, and stay connected with your global team—all completely free and offline.
             </p>
             <div className="hero-buttons">
-              <button onClick={handleDownload} className="btn-primary pulse" aria-label="Download World Clock Extension">
-                Download Now - It's Free
+              <button onClick={handleDownload} className="btn-primary pulse glow-button" aria-label="Download World Clock Extension">
+                <span className="btn-content">
+                  <span className="btn-icon">⬇️</span>
+                  <span>Download Now - It's Free</span>
+                  <span className="btn-shine"></span>
+                </span>
               </button>
-              <Link href="#features" className="btn-secondary">
-                Learn More
+              <Link href="#features" className="btn-secondary hover-lift">
+                <span>Learn More</span>
+                <span className="btn-arrow">→</span>
               </Link>
               <button 
                 onClick={toggleDarkMode} 
-                className="hero-dark-toggle"
+                className="hero-dark-toggle bounce-on-hover"
                 aria-label="Toggle dark mode"
                 title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
@@ -258,35 +288,41 @@ export default function Home() {
         <div className="container">
           <h2 className="section-title">Why You'll Love It</h2>
           <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">⚡</div>
+            <div className="feature-card card-hover-effect">
+              <div className="feature-icon rotating-icon" aria-hidden="true">⚡</div>
               <h3>Lightning Fast</h3>
               <p>Updates every second with zero lag. See time changes in real-time as they happen.</p>
+              <div className="card-glow"></div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">🎨</div>
+            <div className="feature-card card-hover-effect">
+              <div className="feature-icon pulsing-icon" aria-hidden="true">🎨</div>
               <h3>Beautiful Design</h3>
               <p>Modern gradient backgrounds, smooth animations, and an intuitive user interface.</p>
+              <div className="card-glow"></div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">🌍</div>
+            <div className="feature-card card-hover-effect">
+              <div className="feature-icon floating-icon" aria-hidden="true">🌍</div>
               <h3>Multiple Time Zones</h3>
               <p>Track Eastern Time, Pacific Time, Brazil, and Italy simultaneously. Perfect for global teams and travelers.</p>
+              <div className="card-glow"></div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">🔒</div>
+            <div className="feature-card card-hover-effect">
+              <div className="feature-icon rotating-icon" aria-hidden="true">🔒</div>
               <h3>Privacy First</h3>
               <p>100% offline operation. No data collection. No tracking. Your privacy is protected.</p>
+              <div className="card-glow"></div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">🚀</div>
+            <div className="feature-card card-hover-effect">
+              <div className="feature-icon pulsing-icon" aria-hidden="true">🚀</div>
               <h3>Easy Setup</h3>
               <p>Install in seconds. Download, load the extension, and start tracking time zones immediately.</p>
+              <div className="card-glow"></div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon" aria-hidden="true">💯</div>
+            <div className="feature-card card-hover-effect">
+              <div className="feature-icon floating-icon" aria-hidden="true">💯</div>
               <h3>Completely Free</h3>
               <p>No ads, no subscriptions, no hidden costs. Full functionality available at no charge.</p>
+              <div className="card-glow"></div>
             </div>
           </div>
         </div>
@@ -1046,6 +1082,296 @@ export default function Home() {
       )}
 
       <style jsx>{`
+        /* Animated Background */
+        .animated-background {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .particle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: rgba(102, 126, 234, 0.5);
+          border-radius: 50%;
+          animation: float-particle 20s infinite ease-in-out;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 15s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 18s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 20s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 16s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 19s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 17s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 2.5s; animation-duration: 21s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 4.5s; animation-duration: 14s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 1.5s; animation-duration: 22s; }
+        .particle:nth-child(10) { left: 95%; animation-delay: 3.5s; animation-duration: 18s; }
+
+        @keyframes float-particle {
+          0%, 100% {
+            transform: translateY(100vh) translateX(0) scale(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-100px) translateX(100px) scale(1.5);
+            opacity: 0;
+          }
+        }
+
+        /* Gradient Orbs */
+        .gradient-orb {
+          position: fixed;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.3;
+          z-index: -1;
+          pointer-events: none;
+          animation: orb-float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+          width: 500px;
+          height: 500px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          top: -250px;
+          left: -250px;
+          animation-delay: 0s;
+        }
+
+        .orb-2 {
+          width: 400px;
+          height: 400px;
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          bottom: -200px;
+          right: -200px;
+          animation-delay: 5s;
+        }
+
+        .orb-3 {
+          width: 300px;
+          height: 300px;
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          top: 50%;
+          right: 10%;
+          animation-delay: 10s;
+        }
+
+        @keyframes orb-float {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(50px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-30px, 30px) scale(0.9);
+          }
+        }
+
+        /* Hero Badge */
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          padding: 8px 16px;
+          border-radius: 50px;
+          margin-bottom: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          animation: badge-pulse 2s ease-in-out infinite;
+        }
+
+        .badge-icon {
+          font-size: 1.2rem;
+          animation: rotate 3s linear infinite;
+        }
+
+        @keyframes badge-pulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+          }
+          50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+          }
+        }
+
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        /* Title Gradient */
+        .title-gradient {
+          background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          display: inline-block;
+        }
+
+        .title-accent {
+          background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          display: inline-block;
+        }
+
+        /* Glow Button */
+        .glow-button {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .btn-content {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .btn-icon {
+          font-size: 1.2rem;
+          animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+
+        .btn-shine {
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+          0% { left: -100%; }
+          100% { left: 100%; }
+        }
+
+        .glow-button::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.5);
+          transform: translate(-50%, -50%);
+          transition: width 0.6s, height 0.6s;
+        }
+
+        .glow-button:hover::before {
+          width: 300px;
+          height: 300px;
+        }
+
+        /* Hover Lift Effect */
+        .hover-lift {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .btn-arrow {
+          transition: transform 0.3s ease;
+        }
+
+        .hover-lift:hover .btn-arrow {
+          transform: translateX(5px);
+        }
+
+        /* Bounce on Hover */
+        .bounce-on-hover:hover {
+          animation: bounce-button 0.5s ease;
+        }
+
+        @keyframes bounce-button {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+
+        /* Card Hover Effects */
+        .card-hover-effect {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .card-glow {
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+          opacity: 0;
+          transition: opacity 0.5s ease;
+          pointer-events: none;
+        }
+
+        .card-hover-effect:hover .card-glow {
+          opacity: 1;
+        }
+
+        /* Animated Icons */
+        .rotating-icon {
+          animation: rotate-slow 4s linear infinite;
+        }
+
+        @keyframes rotate-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .pulsing-icon {
+          animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.1);
+          }
+        }
+
+        .floating-icon {
+          animation: float-icon 3s ease-in-out infinite;
+        }
+
+        @keyframes float-icon {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
         .hero {
           background: var(--primary-gradient);
           min-height: 100vh;
@@ -1053,6 +1379,8 @@ export default function Home() {
           align-items: center;
           padding: 60px 20px;
           color: white;
+          position: relative;
+          overflow: hidden;
         }
 
         .hero-content {
@@ -1236,14 +1564,7 @@ export default function Home() {
           box-shadow: var(--card-shadow);
           transition: all 0.3s ease;
           text-align: center;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-10px);
-          box-shadow: var(--card-hover-shadow);
-        }
-
-        .feature-card {
+          position: relative;
           animation: fadeInUp 0.6s ease-out;
         }
 
@@ -1253,6 +1574,11 @@ export default function Home() {
         .feature-card:nth-child(4) { animation-delay: 0.4s; }
         .feature-card:nth-child(5) { animation-delay: 0.5s; }
         .feature-card:nth-child(6) { animation-delay: 0.6s; }
+
+        .feature-card:hover {
+          transform: translateY(-10px) scale(1.02);
+          box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
 
         .feature-icon {
           font-size: 3rem;
