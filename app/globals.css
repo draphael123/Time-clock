@@ -5,10 +5,30 @@
 }
 
 :root {
+  /* Vibrant Primary Gradients */
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-vibrant: linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #667eea 100%);
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --vibrant-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c44569 100%);
+  --ocean-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  --sunset-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 50%, #30cfd0 100%);
+  --tropical-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+  --aurora-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  
+  /* Color Variables */
   --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   --card-hover-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --primary-color: #667eea;
+  --primary-bright: #4facfe;
+  --secondary-color: #f5576c;
+  --accent-color: #00f2fe;
+  --success-color: #43e97b;
+  --warning-color: #fa709a;
+  --vibrant-pink: #f093fb;
+  --vibrant-orange: #ff6b6b;
 }
 
 body {

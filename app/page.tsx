@@ -1163,7 +1163,7 @@ export default function Home() {
         .orb-1 {
           width: 500px;
           height: 500px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: var(--primary-vibrant);
           top: -250px;
           left: -250px;
           animation-delay: 0s;
@@ -1172,7 +1172,7 @@ export default function Home() {
         .orb-2 {
           width: 400px;
           height: 400px;
-          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          background: var(--tropical-gradient);
           bottom: -200px;
           right: -200px;
           animation-delay: 5s;
@@ -1181,7 +1181,7 @@ export default function Home() {
         .orb-3 {
           width: 300px;
           height: 300px;
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          background: var(--accent-gradient);
           top: 50%;
           right: 10%;
           animation-delay: 10s;
@@ -1244,7 +1244,7 @@ export default function Home() {
         }
 
         .title-accent {
-          background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+          background: var(--sunset-gradient);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -1432,8 +1432,8 @@ export default function Home() {
         }
 
         .btn-primary {
-          background: white;
-          color: #667eea;
+          background: var(--primary-vibrant);
+          color: white;
           padding: 18px 36px;
           border: none;
           border-radius: 50px;
@@ -1441,7 +1441,7 @@ export default function Home() {
           font-weight: 700;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
         }
 
         .btn-primary:hover {
@@ -1563,7 +1563,7 @@ export default function Home() {
           text-align: center;
           margin-bottom: 60px;
           font-weight: 800;
-          background: var(--primary-gradient);
+          background: var(--aurora-gradient);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -1584,7 +1584,18 @@ export default function Home() {
           text-align: center;
           position: relative;
           animation: fadeInUp 0.6s ease-out;
+          border-top: 4px solid transparent;
+          background-image: linear-gradient(white, white), var(--primary-vibrant);
+          background-origin: border-box;
+          background-clip: padding-box, border-box;
         }
+
+        .feature-card:nth-child(1) { border-top-color: #4facfe; }
+        .feature-card:nth-child(2) { border-top-color: #f093fb; }
+        .feature-card:nth-child(3) { border-top-color: #43e97b; }
+        .feature-card:nth-child(4) { border-top-color: #fa709a; }
+        .feature-card:nth-child(5) { border-top-color: #00f2fe; }
+        .feature-card:nth-child(6) { border-top-color: #ff6b6b; }
 
         .feature-card:nth-child(1) { animation-delay: 0.1s; }
         .feature-card:nth-child(2) { animation-delay: 0.2s; }
@@ -1595,7 +1606,8 @@ export default function Home() {
 
         .feature-card:hover {
           transform: translateY(-10px) scale(1.02);
-          box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+          box-shadow: 0 20px 60px rgba(79, 172, 254, 0.4);
+          border-top-width: 6px;
         }
 
         .feature-icon {
@@ -1633,7 +1645,7 @@ export default function Home() {
         .step-number {
           width: 80px;
           height: 80px;
-          background: var(--primary-gradient);
+          background: var(--primary-vibrant);
           color: white;
           border-radius: 50%;
           display: flex;
@@ -1642,6 +1654,7 @@ export default function Home() {
           font-size: 2rem;
           font-weight: 800;
           margin: 0 auto 20px;
+          box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
         }
 
         .step h3 {
@@ -1742,7 +1755,7 @@ export default function Home() {
           background: #f8f9fa;
           padding: 30px;
           border-radius: 15px;
-          border-left: 4px solid #667eea;
+          border-left: 4px solid var(--primary-bright);
           transition: all 0.3s ease;
         }
 
@@ -1883,7 +1896,7 @@ export default function Home() {
           width: 50px;
           height: 50px;
           border: 4px solid #f3f3f3;
-          border-top: 4px solid #667eea;
+          border-top: 4px solid var(--primary-bright);
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
@@ -2066,13 +2079,13 @@ export default function Home() {
         }
 
         .screenshot-thumbnails button:hover {
-          border-color: #667eea;
+          border-color: var(--primary-bright);
         }
 
         .screenshot-thumbnails button.active {
-          background: #667eea;
+          background: var(--primary-bright);
           color: white;
-          border-color: #667eea;
+          border-color: var(--primary-bright);
         }
 
         /* Feature Comparison */
@@ -2151,7 +2164,7 @@ export default function Home() {
         .changelog-version {
           font-size: 1.5rem;
           font-weight: 800;
-          color: #667eea;
+          color: var(--primary-bright);
           margin-bottom: 5px;
         }
 
@@ -2192,7 +2205,7 @@ export default function Home() {
           background: #f8f9fa;
           padding: 30px;
           border-radius: 12px;
-          border-left: 4px solid #667eea;
+          border-left: 4px solid var(--primary-bright);
           transition: all 0.3s ease;
         }
 
@@ -2303,7 +2316,7 @@ export default function Home() {
           gap: 10px;
           font-size: 1.3rem;
           font-weight: 700;
-          color: #667eea;
+          color: var(--primary-bright);
         }
 
         .nav-links {
@@ -2326,7 +2339,7 @@ export default function Home() {
 
         .nav-links a:hover,
         .nav-links a.active {
-          color: #667eea;
+          color: var(--primary-bright);
         }
 
         .nav-links a.active::after {
@@ -2336,7 +2349,7 @@ export default function Home() {
           left: 0;
           right: 0;
           height: 2px;
-          background: #667eea;
+          background: var(--primary-bright);
         }
 
         .nav-download-btn {
@@ -2449,7 +2462,7 @@ export default function Home() {
         .use-case-card:hover {
           transform: translateY(-10px);
           box-shadow: var(--card-hover-shadow);
-          border-color: #667eea;
+          border-color: var(--primary-bright);
         }
 
         .use-case-icon {
@@ -2573,7 +2586,7 @@ export default function Home() {
 
         .highlight-box {
           background: #e3f2fd;
-          border-left: 4px solid #667eea;
+          border-left: 4px solid var(--primary-bright);
           padding: 15px;
           border-radius: 8px;
           margin: 15px 0;
@@ -2611,7 +2624,7 @@ export default function Home() {
         }
 
         .video-placeholder {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: var(--primary-vibrant);
           aspect-ratio: 16/9;
           display: flex;
           flex-direction: column;
@@ -2705,7 +2718,7 @@ export default function Home() {
         .metric-value {
           font-size: 2.5rem;
           font-weight: 800;
-          color: #667eea;
+          color: var(--primary-bright);
           margin-bottom: 10px;
         }
 
@@ -2766,7 +2779,7 @@ export default function Home() {
         }
 
         .tool-link {
-          color: #667eea;
+          color: var(--primary-bright);
           text-decoration: none;
           font-weight: 600;
           transition: color 0.3s ease;
@@ -2809,7 +2822,7 @@ export default function Home() {
         .newsletter-btn {
           padding: 15px 30px;
           background: white;
-          color: #667eea;
+          color: var(--primary-bright);
           border: none;
           border-radius: 50px;
           font-weight: 700;
@@ -2884,7 +2897,7 @@ export default function Home() {
         }
 
         .support-link {
-          color: #667eea;
+          color: var(--primary-bright);
           text-decoration: none;
           font-weight: 600;
           transition: color 0.3s ease;
@@ -2936,7 +2949,7 @@ export default function Home() {
           position: absolute;
           top: -100px;
           left: 0;
-          background: #667eea;
+          background: var(--primary-bright);
           color: white;
           padding: 10px 20px;
           text-decoration: none;
