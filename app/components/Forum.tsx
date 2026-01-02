@@ -40,6 +40,13 @@ export default function Forum() {
   const [newPostCategory, setNewPostCategory] = useState('general')
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   const [newReply, setNewReply] = useState('')
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [viewMode, setViewMode] = useState<'all' | 'my-posts' | 'bookmarks' | 'profile'>('all')
+  const [bookmarks, setBookmarks] = useState<string[]>([])
+  const [editingPost, setEditingPost] = useState<Post | null>(null)
+  const [editPostTitle, setEditPostTitle] = useState('')
+  const [editPostContent, setEditPostContent] = useState('')
+  const [editPostCategory, setEditPostCategory] = useState('general')
 
   const categories = [
     { id: 'all', name: 'All Topics', icon: '📋' },
@@ -53,7 +60,14 @@ export default function Forum() {
   useEffect(() => {
     checkAuth()
     loadPosts()
+    loadBookmarks()
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      loadBookmarks()
+    }
+  }, [user])
 
   const checkAuth = async () => {
     if (typeof window === 'undefined') return
@@ -272,9 +286,142 @@ export default function Forum() {
     }
   }
 
+  const loadBookmarks = () => {
+    if (typeof window === 'undefined' || !user) return
+    const stored = localStorage.getItem(`forumBookmarks_${user.uid}`)
+    if (stored) {
+      try {
+        setBookmarks(JSON.parse(stored))
+      } catch (e) {
+        console.error('Error loading bookmarks:', e)
+      }
+    }
+  }
+
+  const saveBookmarks = (newBookmarks: string[]) => {
+    if (typeof window === 'undefined' || !user) return
+    localStorage.setItem(`forumBookmarks_${user.uid}`, JSON.stringify(newBookmarks))
+    setBookmarks(newBookmarks)
+  }
+
+  const toggleBookmark = (postId: string) => {
+    if (!user) return
+    const newBookmarks = bookmarks.includes(postId)
+      ? bookmarks.filter(id => id !== postId)
+      : [...bookmarks, postId]
+    saveBookmarks(newBookmarks)
+  }
+
+  const isBookmarked = (postId: string) => bookmarks.includes(postId)
+
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post)
+    setEditPostTitle(post.title)
+    setEditPostContent(post.content)
+    setEditPostCategory(post.category)
+    setSelectedPost(null)
+  }
+
+  const handleUpdatePost = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user || !editingPost || !editPostTitle.trim() || !editPostContent.trim()) return
+
+    const updatedPost: Post = {
+      ...editingPost,
+      title: editPostTitle.trim(),
+      content: editPostContent.trim(),
+      category: editPostCategory
+    }
+
+    try {
+      const firebaseModule = await import('firebase/app')
+      const firebase = firebaseModule.default
+      const { getDatabase, ref, set } = await import('firebase/database')
+
+      let app
+      try {
+        app = firebase.getApp()
+        const db = getDatabase(app)
+        await set(ref(db, `forum/posts/${editingPost.id}`), updatedPost)
+      } catch (e) {
+        // Firebase not configured, use localStorage
+        const updatedPosts = posts.map(p => p.id === editingPost.id ? updatedPost : p)
+        localStorage.setItem('forumPosts', JSON.stringify(updatedPosts))
+        setPosts(updatedPosts)
+      }
+    } catch (error) {
+      // Fallback to localStorage
+      const updatedPosts = posts.map(p => p.id === editingPost.id ? updatedPost : p)
+      localStorage.setItem('forumPosts', JSON.stringify(updatedPosts))
+      setPosts(updatedPosts)
+    }
+
+    setEditingPost(null)
+    setEditPostTitle('')
+    setEditPostContent('')
+    setEditPostCategory('general')
+  }
+
+  const handleDeletePost = async (postId: string) => {
+    if (!user || !confirm('Are you sure you want to delete this post?')) return
+
+    try {
+      const firebaseModule = await import('firebase/app')
+      const firebase = firebaseModule.default
+      const { getDatabase, ref, remove } = await import('firebase/database')
+
+      let app
+      try {
+        app = firebase.getApp()
+        const db = getDatabase(app)
+        await remove(ref(db, `forum/posts/${postId}`))
+      } catch (e) {
+        // Firebase not configured, use localStorage
+        const updatedPosts = posts.filter(p => p.id !== postId)
+        localStorage.setItem('forumPosts', JSON.stringify(updatedPosts))
+        setPosts(updatedPosts)
+      }
+    } catch (error) {
+      // Fallback to localStorage
+      const updatedPosts = posts.filter(p => p.id !== postId)
+      localStorage.setItem('forumPosts', JSON.stringify(updatedPosts))
+      setPosts(updatedPosts)
+    }
+
+    if (selectedPost?.id === postId) {
+      setSelectedPost(null)
+    }
+    setEditingPost(null)
+  }
+
+  const getUserStats = () => {
+    if (!user) return { posts: 0, replies: 0 }
+    const userPosts = posts.filter(p => p.author === user.uid)
+    const userReplies = posts.reduce((count, post) => {
+      return count + (post.replies?.filter(r => r.author === user.uid).length || 0)
+    }, 0)
+    return { posts: userPosts.length, replies: userReplies }
+  }
+
+  const getMyPosts = () => {
+    if (!user) return []
+    return posts.filter(p => p.author === user.uid)
+  }
+
+  const getBookmarkedPosts = () => {
+    return posts.filter(p => bookmarks.includes(p.id))
+  }
+
+  let displayPosts = posts
+  if (viewMode === 'my-posts') {
+    displayPosts = getMyPosts()
+  } else if (viewMode === 'bookmarks') {
+    displayPosts = getBookmarkedPosts()
+  }
+
   const filteredPosts = selectedCategory === 'all' 
-    ? posts 
-    : posts.filter(p => p.category === selectedCategory)
+    ? displayPosts 
+    : displayPosts.filter(p => p.category === selectedCategory)
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp)
@@ -312,10 +459,34 @@ export default function Forum() {
             <h2>💬 Community Forum</h2>
             <div className="forum-header-actions">
               {user ? (
-                <>
-                  <span className="forum-user">👤 {user.displayName || user.email}</span>
-                  <button onClick={handleLogout} className="forum-logout-btn">Logout</button>
-                </>
+                <div className="forum-user-menu-container">
+                  <button 
+                    className="forum-user-btn"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                  >
+                    👤 {user.displayName || user.email?.split('@')[0] || 'User'}
+                  </button>
+                  {showUserMenu && (
+                    <div className="forum-user-menu">
+                      <button onClick={() => { setViewMode('profile'); setShowUserMenu(false); setSelectedPost(null) }}>
+                        📊 My Profile
+                      </button>
+                      <button onClick={() => { setViewMode('my-posts'); setShowUserMenu(false); setSelectedPost(null) }}>
+                        📝 My Posts
+                      </button>
+                      <button onClick={() => { setViewMode('bookmarks'); setShowUserMenu(false); setSelectedPost(null) }}>
+                        🔖 Bookmarks
+                      </button>
+                      <button onClick={() => { setViewMode('all'); setShowUserMenu(false); setSelectedPost(null) }}>
+                        📋 All Posts
+                      </button>
+                      <div className="forum-menu-divider"></div>
+                      <button onClick={handleLogout} className="forum-menu-logout">
+                        🚪 Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <button onClick={() => setShowAuth(true)} className="forum-login-btn">
                   Login / Register
@@ -326,7 +497,66 @@ export default function Forum() {
           </div>
 
           <div className="forum-content">
+            {/* View Mode Indicator */}
+            {user && viewMode !== 'all' && (
+              <div className="forum-view-mode-indicator">
+                <button 
+                  className="forum-back-to-all-btn"
+                  onClick={() => { setViewMode('all'); setSelectedPost(null) }}
+                >
+                  ← Back to All Posts
+                </button>
+                <span className="forum-view-mode-label">
+                  {viewMode === 'my-posts' && '📝 My Posts'}
+                  {viewMode === 'bookmarks' && '🔖 Bookmarks'}
+                  {viewMode === 'profile' && '📊 My Profile'}
+                </span>
+              </div>
+            )}
+
+            {/* Profile View */}
+            {user && viewMode === 'profile' && (
+              <div className="forum-profile-view">
+                <div className="forum-profile-header">
+                  <div className="forum-profile-avatar">
+                    {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                  </div>
+                  <h2>{user.displayName || user.email?.split('@')[0] || 'User'}</h2>
+                  <p>{user.email}</p>
+                </div>
+                <div className="forum-profile-stats">
+                  <div className="forum-stat-card">
+                    <div className="forum-stat-number">{getUserStats().posts}</div>
+                    <div className="forum-stat-label">Posts</div>
+                  </div>
+                  <div className="forum-stat-card">
+                    <div className="forum-stat-number">{getUserStats().replies}</div>
+                    <div className="forum-stat-label">Replies</div>
+                  </div>
+                  <div className="forum-stat-card">
+                    <div className="forum-stat-number">{bookmarks.length}</div>
+                    <div className="forum-stat-label">Bookmarks</div>
+                  </div>
+                </div>
+                <div className="forum-profile-actions">
+                  <button 
+                    onClick={() => { setViewMode('my-posts'); setSelectedPost(null) }}
+                    className="forum-profile-action-btn"
+                  >
+                    View My Posts ({getUserStats().posts})
+                  </button>
+                  <button 
+                    onClick={() => { setViewMode('bookmarks'); setSelectedPost(null) }}
+                    className="forum-profile-action-btn"
+                  >
+                    View Bookmarks ({bookmarks.length})
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Categories */}
+            {viewMode !== 'profile' && (
             <div className="forum-categories">
               {categories.map(cat => (
                 <button
@@ -339,6 +569,7 @@ export default function Forum() {
                 </button>
               ))}
             </div>
+            )}
 
             {/* New Post Button */}
             {user && (
@@ -381,8 +612,54 @@ export default function Forum() {
               </form>
             )}
 
+            {/* Edit Post Form */}
+            {editingPost && user && editingPost.author === user.uid && (
+              <form onSubmit={handleUpdatePost} className="forum-edit-post-form">
+                <h3>✏️ Edit Post</h3>
+                <input
+                  type="text"
+                  value={editPostTitle}
+                  onChange={(e) => setEditPostTitle(e.target.value)}
+                  placeholder="Post title..."
+                  required
+                  maxLength={100}
+                />
+                <textarea
+                  value={editPostContent}
+                  onChange={(e) => setEditPostContent(e.target.value)}
+                  placeholder="Write your post..."
+                  required
+                  rows={6}
+                  maxLength={2000}
+                />
+                <select
+                  value={editPostCategory}
+                  onChange={(e) => setEditPostCategory(e.target.value)}
+                >
+                  {categories.filter(c => c.id !== 'all').map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                  ))}
+                </select>
+                <div className="forum-edit-actions">
+                  <button type="submit" className="forum-submit-btn">Save Changes</button>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setEditingPost(null)
+                      setEditPostTitle('')
+                      setEditPostContent('')
+                      setEditPostCategory('general')
+                    }}
+                    className="forum-cancel-btn"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
             {/* Posts List */}
-            {!selectedPost && (
+            {!selectedPost && !editingPost && (
               <div className="forum-posts">
                 {filteredPosts.length === 0 ? (
                   <div className="forum-empty">
@@ -393,18 +670,51 @@ export default function Forum() {
                     <div
                       key={post.id}
                       className="forum-post-card"
-                      onClick={() => setSelectedPost(post)}
                     >
-                      <div className="post-header">
-                        <span className="post-category">{categories.find(c => c.id === post.category)?.icon} {categories.find(c => c.id === post.category)?.name}</span>
-                        <span className="post-time">{formatTime(post.timestamp)}</span>
+                      <div 
+                        className="post-card-content"
+                        onClick={() => setSelectedPost(post)}
+                      >
+                        <div className="post-header">
+                          <span className="post-category">{categories.find(c => c.id === post.category)?.icon} {categories.find(c => c.id === post.category)?.name}</span>
+                          <span className="post-time">{formatTime(post.timestamp)}</span>
+                        </div>
+                        <h3 className="post-title">{post.title}</h3>
+                        <p className="post-preview">{post.content.substring(0, 150)}...</p>
+                        <div className="post-footer">
+                          <span className="post-author">👤 {post.authorName}</span>
+                          <span className="post-replies">💬 {post.replies?.length || 0} replies</span>
+                        </div>
                       </div>
-                      <h3 className="post-title">{post.title}</h3>
-                      <p className="post-preview">{post.content.substring(0, 150)}...</p>
-                      <div className="post-footer">
-                        <span className="post-author">👤 {post.authorName}</span>
-                        <span className="post-replies">💬 {post.replies?.length || 0} replies</span>
-                      </div>
+                      {user && (
+                        <div className="post-actions" onClick={(e) => e.stopPropagation()}>
+                          {user.uid === post.author && (
+                            <>
+                              <button 
+                                className="post-action-btn edit-btn"
+                                onClick={() => handleEditPost(post)}
+                                title="Edit post"
+                              >
+                                ✏️
+                              </button>
+                              <button 
+                                className="post-action-btn delete-btn"
+                                onClick={() => handleDeletePost(post.id)}
+                                title="Delete post"
+                              >
+                                🗑️
+                              </button>
+                            </>
+                          )}
+                          <button 
+                            className={`post-action-btn bookmark-btn ${isBookmarked(post.id) ? 'bookmarked' : ''}`}
+                            onClick={() => toggleBookmark(post.id)}
+                            title={isBookmarked(post.id) ? 'Remove bookmark' : 'Bookmark'}
+                          >
+                            {isBookmarked(post.id) ? '🔖' : '🔖'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
@@ -424,7 +734,38 @@ export default function Forum() {
                   <span className="post-category">{categories.find(c => c.id === selectedPost.category)?.icon} {categories.find(c => c.id === selectedPost.category)?.name}</span>
                   <span className="post-time">{formatTime(selectedPost.timestamp)}</span>
                 </div>
-                <h2 className="post-detail-title">{selectedPost.title}</h2>
+                <div className="post-detail-title-row">
+                  <h2 className="post-detail-title">{selectedPost.title}</h2>
+                  {user && (
+                    <div className="post-detail-actions">
+                      {user.uid === selectedPost.author && (
+                        <>
+                          <button 
+                            className="post-detail-action-btn"
+                            onClick={() => handleEditPost(selectedPost)}
+                            title="Edit post"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button 
+                            className="post-detail-action-btn delete"
+                            onClick={() => handleDeletePost(selectedPost.id)}
+                            title="Delete post"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </>
+                      )}
+                      <button 
+                        className={`post-detail-action-btn ${isBookmarked(selectedPost.id) ? 'bookmarked' : ''}`}
+                        onClick={() => toggleBookmark(selectedPost.id)}
+                        title={isBookmarked(selectedPost.id) ? 'Remove bookmark' : 'Bookmark'}
+                      >
+                        {isBookmarked(selectedPost.id) ? '🔖 Bookmarked' : '🔖 Bookmark'}
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="post-detail-author">👤 {selectedPost.authorName}</div>
                 <div className="post-detail-content">{selectedPost.content}</div>
 
@@ -437,6 +778,50 @@ export default function Forum() {
                         <div className="reply-header">
                           <span className="reply-author">👤 {reply.authorName}</span>
                           <span className="reply-time">{formatTime(reply.timestamp)}</span>
+                          {user && user.uid === reply.author && (
+                            <button 
+                              className="reply-delete-btn"
+                              onClick={async () => {
+                                if (!confirm('Delete this reply?')) return
+                                try {
+                                  const firebaseModule = await import('firebase/app')
+                                  const firebase = firebaseModule.default
+                                  const { getDatabase, ref, get, set } = await import('firebase/database')
+                                  
+                                  let app
+                                  try {
+                                    app = firebase.getApp()
+                                    const db = getDatabase(app)
+                                    const postRef = ref(db, `forum/posts/${selectedPost.id}`)
+                                    const snapshot = await get(postRef)
+                                    
+                                    if (snapshot.exists()) {
+                                      const post = snapshot.val() as Post
+                                      const updatedReplies = post.replies?.filter((r: Reply) => r.id !== reply.id) || []
+                                      await set(ref(db, `forum/posts/${selectedPost.id}/replies`), updatedReplies)
+                                    }
+                                  } catch (e) {
+                                    const updatedReplies = selectedPost.replies?.filter(r => r.id !== reply.id) || []
+                                    const updatedPost = { ...selectedPost, replies: updatedReplies }
+                                    setSelectedPost(updatedPost)
+                                    const updatedPosts = posts.map(p => p.id === selectedPost.id ? updatedPost : p)
+                                    localStorage.setItem('forumPosts', JSON.stringify(updatedPosts))
+                                    setPosts(updatedPosts)
+                                  }
+                                } catch (error) {
+                                  const updatedReplies = selectedPost.replies?.filter(r => r.id !== reply.id) || []
+                                  const updatedPost = { ...selectedPost, replies: updatedReplies }
+                                  setSelectedPost(updatedPost)
+                                  const updatedPosts = posts.map(p => p.id === selectedPost.id ? updatedPost : p)
+                                  localStorage.setItem('forumPosts', JSON.stringify(updatedPosts))
+                                  setPosts(updatedPosts)
+                                }
+                              }}
+                              title="Delete reply"
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
                         <div className="reply-content">{reply.content}</div>
                       </div>
@@ -537,9 +922,329 @@ export default function Forum() {
           gap: 10px;
         }
 
-        .forum-user {
+        .forum-user-menu-container {
+          position: relative;
+        }
+
+        .forum-user-btn {
+          padding: 8px 16px;
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 8px;
+          cursor: pointer;
           font-size: 0.9rem;
+          transition: background 0.2s ease;
+        }
+
+        .forum-user-btn:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        .forum-user-menu {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          background: white;
+          border-radius: 10px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          min-width: 180px;
+          z-index: 10001;
+          overflow: hidden;
+          animation: slideDown 0.2s ease;
+        }
+
+        .forum-user-menu button {
+          width: 100%;
+          padding: 12px 16px;
+          border: none;
+          background: white;
+          text-align: left;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: background 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .forum-user-menu button:hover {
+          background: #f0f0f0;
+        }
+
+        .forum-menu-divider {
+          height: 1px;
+          background: #eee;
+          margin: 5px 0;
+        }
+
+        .forum-menu-logout {
+          color: #e74c3c !important;
+        }
+
+        .forum-menu-logout:hover {
+          background: #fee !important;
+        }
+
+        .forum-view-mode-indicator {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 15px;
+          background: #f8f9fa;
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+
+        .forum-back-to-all-btn {
+          background: #667eea;
+          color: white;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: background 0.2s ease;
+        }
+
+        .forum-back-to-all-btn:hover {
+          background: #5568d3;
+        }
+
+        .forum-view-mode-label {
+          font-weight: 700;
+          color: #333;
+        }
+
+        .forum-profile-view {
+          animation: fadeIn 0.3s ease;
+        }
+
+        .forum-profile-header {
+          text-align: center;
+          padding: 30px 20px;
+          background: var(--primary-gradient);
+          color: white;
+          border-radius: 15px;
+          margin-bottom: 20px;
+        }
+
+        .forum-profile-avatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+          font-weight: 700;
+          margin: 0 auto 15px;
+        }
+
+        .forum-profile-header h2 {
+          margin: 0 0 5px 0;
+          font-size: 1.5rem;
+        }
+
+        .forum-profile-header p {
+          margin: 0;
           opacity: 0.9;
+          font-size: 0.9rem;
+        }
+
+        .forum-profile-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 15px;
+          margin-bottom: 20px;
+        }
+
+        .forum-stat-card {
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 10px;
+          text-align: center;
+        }
+
+        .forum-stat-number {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #667eea;
+          margin-bottom: 5px;
+        }
+
+        .forum-stat-label {
+          color: #666;
+          font-size: 0.9rem;
+        }
+
+        .forum-profile-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .forum-profile-action-btn {
+          padding: 12px;
+          background: var(--primary-gradient);
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s ease;
+        }
+
+        .forum-profile-action-btn:hover {
+          transform: translateY(-2px);
+        }
+
+        .forum-edit-post-form {
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 10px;
+          margin-bottom: 20px;
+        }
+
+        .forum-edit-post-form h3 {
+          margin: 0 0 15px 0;
+          color: #333;
+        }
+
+        .forum-edit-post-form input,
+        .forum-edit-post-form textarea,
+        .forum-edit-post-form select {
+          width: 100%;
+          padding: 12px;
+          border: 2px solid #ddd;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          margin-bottom: 12px;
+          font-family: inherit;
+        }
+
+        .forum-edit-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .forum-edit-actions .forum-submit-btn {
+          flex: 1;
+        }
+
+        .forum-cancel-btn {
+          flex: 1;
+          padding: 12px;
+          background: #ddd;
+          color: #333;
+          border: none;
+          border-radius: 8px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .forum-cancel-btn:hover {
+          background: #ccc;
+        }
+
+        .post-card-content {
+          cursor: pointer;
+        }
+
+        .post-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid #eee;
+        }
+
+        .post-action-btn {
+          background: #f0f0f0;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          transition: all 0.2s ease;
+        }
+
+        .post-action-btn:hover {
+          background: #e0e0e0;
+        }
+
+        .post-action-btn.bookmark-btn.bookmarked {
+          background: #fff3cd;
+          color: #856404;
+        }
+
+        .post-action-btn.delete-btn:hover {
+          background: #fee;
+          color: #c33;
+        }
+
+        .post-detail-title-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 15px;
+          margin-bottom: 10px;
+        }
+
+        .post-detail-actions {
+          display: flex;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+
+        .post-detail-action-btn {
+          padding: 6px 12px;
+          background: #f0f0f0;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          transition: all 0.2s ease;
+        }
+
+        .post-detail-action-btn:hover {
+          background: #e0e0e0;
+        }
+
+        .post-detail-action-btn.delete:hover {
+          background: #fee;
+          color: #c33;
+        }
+
+        .post-detail-action-btn.bookmarked {
+          background: #fff3cd;
+          color: #856404;
+        }
+
+        .reply-delete-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-size: 0.9rem;
+          opacity: 0.6;
+          transition: opacity 0.2s ease;
+        }
+
+        .reply-delete-btn:hover {
+          opacity: 1;
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .forum-login-btn,
@@ -874,10 +1579,65 @@ export default function Forum() {
         :global(.dark) .forum-new-post-form input,
         :global(.dark) .forum-new-post-form textarea,
         :global(.dark) .forum-new-post-form select,
-        :global(.dark) .forum-reply-form textarea {
+        :global(.dark) .forum-reply-form textarea,
+        :global(.dark) .forum-edit-post-form input,
+        :global(.dark) .forum-edit-post-form textarea,
+        :global(.dark) .forum-edit-post-form select {
           background: #1a1a1a;
           border-color: #444;
           color: white;
+        }
+
+        :global(.dark) .forum-user-menu {
+          background: #2a2a2a;
+        }
+
+        :global(.dark) .forum-user-menu button {
+          background: #2a2a2a;
+          color: white;
+        }
+
+        :global(.dark) .forum-user-menu button:hover {
+          background: #1a1a1a;
+        }
+
+        :global(.dark) .forum-view-mode-indicator {
+          background: #1a1a1a;
+        }
+
+        :global(.dark) .forum-view-mode-label {
+          color: white;
+        }
+
+        :global(.dark) .forum-stat-card {
+          background: #1a1a1a;
+        }
+
+        :global(.dark) .forum-stat-label {
+          color: #aaa;
+        }
+
+        :global(.dark) .forum-edit-post-form {
+          background: #1a1a1a;
+        }
+
+        :global(.dark) .forum-edit-post-form h3 {
+          color: white;
+        }
+
+        :global(.dark) .post-actions {
+          border-top-color: #444;
+        }
+
+        :global(.dark) .post-action-btn,
+        :global(.dark) .post-detail-action-btn {
+          background: #1a1a1a;
+          color: white;
+        }
+
+        :global(.dark) .post-action-btn:hover,
+        :global(.dark) .post-detail-action-btn:hover {
+          background: #2a2a2a;
         }
 
         @media (max-width: 768px) {
