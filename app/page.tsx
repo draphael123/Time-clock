@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import LiveChat from './components/LiveChat'
 import SettingsPanel from './components/SettingsPanel'
 import Forum from './components/Forum'
+import ContactForm from './components/ContactForm'
 
 export default function Home() {
   const [times, setTimes] = useState({
@@ -100,7 +101,7 @@ export default function Home() {
       setShowBackToTop(window.scrollY > 300)
       
       // Update active section for navigation
-      const sections = ['features', 'screenshots', 'comparison', 'changelog', 'testimonials', 'use-cases', 'installation', 'faq']
+      const sections = ['features', 'screenshots', 'comparison', 'changelog', 'testimonials', 'use-cases', 'installation', 'faq', 'contact']
       const current = sections.find(section => {
         const element = document.getElementById(section)
         if (element) {
@@ -183,6 +184,10 @@ export default function Home() {
             <a href="#use-cases" className={activeSection === 'use-cases' ? 'active' : ''}>Use Cases</a>
             <a href="#installation" className={activeSection === 'installation' ? 'active' : ''}>Install</a>
             <a href="#faq" className={activeSection === 'faq' ? 'active' : ''}>FAQ</a>
+            <a href="#contact" className={activeSection === 'contact' ? 'active' : ''}>Contact</a>
+            <Link href="/login" className="nav-login-btn">
+              Login
+            </Link>
             <button onClick={handleDownload} className="nav-download-btn">
               Download
             </button>
@@ -875,6 +880,15 @@ export default function Home() {
       <section id="contact" className="contact-support">
         <div className="container">
           <h2 className="section-title">Need Help?</h2>
+          
+          {/* Contact Form */}
+          <div className="contact-form-section">
+            <ContactForm
+              title="Send Us a Message"
+              subtitle="Have a question or feedback? Fill out the form below and we'll get back to you."
+            />
+          </div>
+
           <div className="support-grid">
             <div className="support-card">
               <div className="support-icon">📚</div>
@@ -2368,6 +2382,25 @@ export default function Home() {
           box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
+        .nav-login-btn {
+          background: rgba(102, 126, 234, 0.1);
+          color: var(--primary-bright);
+          border: 2px solid var(--primary-bright);
+          padding: 10px 20px;
+          border-radius: 25px;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          display: inline-block;
+        }
+
+        .nav-login-btn:hover {
+          background: var(--primary-bright);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
         .mobile-menu-toggle {
           display: none;
           flex-direction: column;
@@ -2858,6 +2891,10 @@ export default function Home() {
         .contact-support {
           padding: 100px 20px;
           background: white;
+        }
+
+        .contact-form-section {
+          margin-bottom: 60px;
         }
 
         .support-grid {
