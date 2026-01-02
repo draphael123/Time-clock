@@ -441,8 +441,11 @@ export default function Forum() {
         className="forum-toggle-btn"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle forum"
+        title="Open Forum - Login to post and reply"
       >
-        💬 Forum
+        <span>💬</span>
+        <span>Forum</span>
+        {!user && <span style={{ fontSize: '0.7rem', opacity: 0.9 }}>(Login)</span>}
       </button>
 
       {/* Auth Modal */}
@@ -870,16 +873,21 @@ export default function Forum() {
           bottom: 90px;
           right: 20px;
           padding: 15px 25px;
-          background: var(--primary-gradient);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
-          border: none;
+          border: 2px solid white;
           border-radius: 50px;
           font-size: 1rem;
           font-weight: 700;
           cursor: pointer;
-          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.6), 0 0 0 3px rgba(102, 126, 234, 0.2);
           z-index: 9999;
           transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 140px;
+          justify-content: center;
         }
 
         .forum-toggle-btn:hover {
