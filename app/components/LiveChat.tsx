@@ -23,6 +23,9 @@ export default function LiveChat() {
 
   // Initialize Firebase (will be set up with environment variables)
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     // Generate a unique user ID if not set
     if (!userId) {
       const storedUserId = localStorage.getItem('chatUserId')
@@ -51,6 +54,12 @@ export default function LiveChat() {
   }, [userId])
 
   const initializeFirebase = async () => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      setIsConnected(false)
+      return
+    }
+
     try {
       // Check if Firebase config is available
       const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
@@ -63,9 +72,9 @@ export default function LiveChat() {
         return
       }
 
-      // Dynamic import of Firebase
-      const firebase = await import('firebase/app')
-      await import('firebase/database')
+      // Dynamic import of Firebase - only on client side
+      const firebaseModule = await import('firebase/app')
+      const firebase = firebaseModule.default
 
       // Firebase config from environment variables
       const firebaseConfig = {
@@ -81,16 +90,15 @@ export default function LiveChat() {
       // Initialize Firebase if not already initialized
       let app
       try {
-        app = firebase.default.getApp()
+        app = firebase.getApp()
       } catch (e) {
-        app = firebase.default.initializeApp(firebaseConfig)
+        app = firebase.initializeApp(firebaseConfig)
       }
 
-      const { getDatabase } = await import('firebase/database')
+      const { getDatabase, ref, get, onChildAdded } = await import('firebase/database')
       const db = getDatabase(app)
 
       // Load existing messages
-      const { ref, get, onChildAdded } = await import('firebase/database')
       const messagesRef = ref(db, 'messages')
       const snapshot = await get(messagesRef)
       if (snapshot.exists()) {
@@ -157,13 +165,14 @@ export default function LiveChat() {
     }
 
     try {
-      if (isConnected) {
+      if (isConnected && typeof window !== 'undefined') {
         // Send to Firebase
-        const firebase = await import('firebase/app')
+        const firebaseModule = await import('firebase/app')
+        const firebase = firebaseModule.default
         const { getDatabase, ref, push } = await import('firebase/database')
         let app
         try {
-          app = firebase.default.getApp()
+          app = firebase.getApp()
         } catch (e) {
           // App not initialized, use fallback
           throw new Error('Firebase not initialized')
