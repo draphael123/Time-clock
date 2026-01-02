@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import LiveChat from './components/LiveChat'
 import SettingsPanel from './components/SettingsPanel'
+import Forum from './components/Forum'
 
 export default function Home() {
   const [times, setTimes] = useState({
@@ -1094,6 +1095,9 @@ export default function Home() {
 
       {/* Live Chat Widget */}
       <LiveChat />
+
+      {/* Forum */}
+      <Forum />
 
       <style jsx>{`
         /* Animated Background */

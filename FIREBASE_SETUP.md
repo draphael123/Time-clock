@@ -1,6 +1,6 @@
-# Firebase Setup for Live Chat
+# Firebase Setup for Live Chat & Forum
 
-The live chat feature uses Firebase Realtime Database for real-time messaging. Follow these steps to set it up:
+The live chat feature uses Firebase Realtime Database for real-time messaging, and the forum feature uses Firebase Authentication for user login. Follow these steps to set it up:
 
 ## Step 1: Create a Firebase Project
 
@@ -18,7 +18,16 @@ The live chat feature uses Firebase Realtime Database for real-time messaging. F
 4. Start in **Test Mode** (for development)
 5. Click "Enable"
 
-## Step 3: Set Database Rules
+## Step 3: Enable Firebase Authentication
+
+1. In your Firebase project, go to **Build** → **Authentication**
+2. Click "Get started"
+3. Click on the **Sign-in method** tab
+4. Click on **Email/Password**
+5. Enable the first toggle (Email/Password)
+6. Click "Save"
+
+## Step 4: Set Database Rules
 
 1. Go to **Realtime Database** → **Rules** tab
 2. Replace the rules with:
@@ -30,6 +39,18 @@ The live chat feature uses Firebase Realtime Database for real-time messaging. F
       ".read": true,
       ".write": true,
       ".indexOn": ["timestamp"]
+    },
+    "forum": {
+      "posts": {
+        ".read": true,
+        ".write": "auth != null",
+        "$postId": {
+          "replies": {
+            ".read": true,
+            ".write": "auth != null"
+          }
+        }
+      }
     }
   }
 }
@@ -37,9 +58,9 @@ The live chat feature uses Firebase Realtime Database for real-time messaging. F
 
 3. Click "Publish"
 
-**Note:** These rules allow anyone to read/write. For production, you should add authentication.
+**Note:** Forum posts require authentication to write, but anyone can read. Messages are open for development.
 
-## Step 4: Get Your Firebase Config
+## Step 5: Get Your Firebase Config
 
 1. Go to **Project Settings** (gear icon)
 2. Scroll down to "Your apps"
@@ -47,7 +68,7 @@ The live chat feature uses Firebase Realtime Database for real-time messaging. F
 4. Register your app (nickname: "World Clock Chat")
 5. Copy the Firebase configuration object
 
-## Step 5: Add Environment Variables
+## Step 6: Add Environment Variables
 
 Create a `.env.local` file in the root of your project:
 
@@ -61,7 +82,7 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 ```
 
-## Step 6: Add to Vercel (for Production)
+## Step 7: Add to Vercel (for Production)
 
 1. Go to your Vercel project settings
 2. Navigate to **Environment Variables**
@@ -70,18 +91,31 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 
 ## Alternative: Use Without Firebase
 
-The chat will work in "offline mode" using localStorage if Firebase is not configured. However, this means:
+The chat and forum will work in "offline mode" using localStorage if Firebase is not configured. However, this means:
 - Messages only appear for the current user
 - No real-time updates
 - Messages are stored locally only
+- Forum posts are stored locally only (not shared between users)
+- No authentication (forum works without login, but posts are local only)
+
+## Forum Features
+
+The forum includes:
+- **Categories**: General, Support, Features, Bugs, Tips & Tricks
+- **User Authentication**: Login/Register with email and password
+- **Post Creation**: Create posts with title, content, and category
+- **Replies**: Reply to posts (requires login)
+- **Real-time Updates**: See new posts and replies instantly
+- **User Profiles**: Display name and email
 
 ## Security Notes
 
 For production, consider:
-1. Adding Firebase Authentication
-2. Restricting database rules based on authentication
-3. Adding message moderation
-4. Limiting message length and rate
+1. Adding message moderation
+2. Limiting message length and rate
+3. Adding spam protection
+4. Implementing user roles (admin, moderator)
+5. Adding content filtering
 
 ## Testing
 
