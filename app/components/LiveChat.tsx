@@ -17,7 +17,7 @@ export default function LiveChat() {
   const [username, setUsername] = useState('')
   const [userId, setUserId] = useState('')
   const [isConnected, setIsConnected] = useState(false)
-  const [showUsernameModal, setShowUsernameModal] = useState(true)
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
 
@@ -42,7 +42,6 @@ export default function LiveChat() {
     const storedUsername = localStorage.getItem('chatUsername')
     if (storedUsername) {
       setUsername(storedUsername)
-      setShowUsernameModal(false)
     }
 
     // Initialize Firebase connection (with delay to ensure DOM is ready)
@@ -149,6 +148,7 @@ export default function LiveChat() {
     if (username.trim()) {
       localStorage.setItem('chatUsername', username)
       setShowUsernameModal(false)
+      setIsOpen(true) // Open chat after username is set
     }
   }
 
@@ -218,8 +218,23 @@ export default function LiveChat() {
     <>
       {/* Username Modal */}
       {showUsernameModal && (
-        <div className="username-modal-overlay">
-          <div className="username-modal">
+        <div 
+          className="username-modal-overlay"
+          onClick={(e) => {
+            // Close modal if clicking on overlay (not the modal itself)
+            if (e.target === e.currentTarget) {
+              setShowUsernameModal(false)
+            }
+          }}
+        >
+          <div className="username-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="username-modal-close"
+              onClick={() => setShowUsernameModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
             <h3>Enter Your Name</h3>
             <p>Choose a name to join the chat</p>
             <form onSubmit={handleUsernameSubmit}>
@@ -246,7 +261,18 @@ export default function LiveChat() {
         {/* Chat Button */}
         <button
           className="chat-toggle-btn"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            if (!isOpen) {
+              // When opening chat, check if username is needed
+              if (!username) {
+                setShowUsernameModal(true)
+              } else {
+                setIsOpen(true)
+              }
+            } else {
+              setIsOpen(false)
+            }
+          }}
           aria-label="Toggle chat"
         >
           {isOpen ? '✕' : '💬'}
@@ -362,6 +388,29 @@ export default function LiveChat() {
         .username-modal p {
           margin: 0 0 20px 0;
           color: #666;
+        }
+
+        .username-modal-close {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background: transparent;
+          border: none;
+          font-size: 24px;
+          color: #999;
+          cursor: pointer;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          transition: all 0.2s ease;
+        }
+
+        .username-modal-close:hover {
+          background: #f0f0f0;
+          color: #333;
         }
 
         .username-input {
