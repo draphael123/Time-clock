@@ -45,8 +45,22 @@ let settings = {
   showOffset: false,
   showDifference: false,
   darkMode: false,
-  compactMode: false
+  compactMode: false,
+  showBusinessHours: false,
+  showCountdown: false,
+  viewMode: 'grid' // 'grid', 'list', 'table'
 };
+
+// Additional data structures for new features
+let timezoneOrder = []; // For drag & drop reordering
+let timezoneGroups = { default: [] }; // For timezone groups/profiles
+let timezoneNotes = {}; // For notes on timezones
+let timezoneLabels = {}; // For custom labels
+let alarms = []; // For alarms & reminders
+let recentlyRemoved = []; // For quick restore
+let businessHoursStart = 9; // Default business hours
+let businessHoursEnd = 17;
+let currentGroup = 'default';
 
 // Comprehensive list of 200+ timezones for adding
 // Load from external file or embed here
@@ -641,6 +655,9 @@ const popularTimezones = [
 // Custom timezones storage
 let customTimezones = [];
 
+// Removed default timezones storage
+let removedTimezones = [];
+
 // Get local timezone
 function getLocalTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -698,6 +715,64 @@ function isDayTime(timezone) {
   }
 }
 
+// Check if timezone is in business hours
+function isBusinessHours(timezone) {
+  try {
+    const now = new Date();
+    const hour = parseInt(now.toLocaleString('en-US', {
+      timeZone: timezone,
+      hour: '2-digit',
+      hour12: false
+    }));
+    return hour >= businessHoursStart && hour < businessHoursEnd;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Get time until next hour
+function getTimeUntilNextHour(timezone) {
+  try {
+    const now = new Date();
+    const tzTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    const minutes = 60 - tzTime.getMinutes();
+    const seconds = 60 - tzTime.getSeconds();
+    return { minutes, seconds, totalSeconds: minutes * 60 + seconds };
+  } catch (error) {
+    return { minutes: 0, seconds: 0, totalSeconds: 0 };
+  }
+}
+
+// Quick time search
+function quickTimeSearch(query) {
+  const lowerQuery = query.toLowerCase();
+  const match = popularTimezones.find(tz => 
+    tz.name.toLowerCase().includes(lowerQuery) ||
+    tz.timezone.toLowerCase().includes(lowerQuery)
+  );
+  if (match) {
+    try {
+      const now = new Date();
+      const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: match.timezone,
+        hour12: !settings.hour24,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: settings.showSeconds ? '2-digit' : undefined
+      });
+      return {
+        name: match.name,
+        time: timeFormatter.format(now),
+        timezone: match.timezone,
+        flag: match.flag
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+  return null;
+}
+
 // Show toast notification
 function showToast(message) {
   const toast = document.getElementById('toast');
@@ -734,6 +809,135 @@ async function copyToClipboard(text) {
       document.body.removeChild(textArea);
     }
   }
+}
+
+// Export settings
+function exportSettings() {
+  const data = {
+    settings,
+    customTimezones,
+    removedTimezones,
+    timezoneOrder,
+    timezoneGroups,
+    timezoneNotes,
+    timezoneLabels,
+    alarms,
+    exportDate: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `world-clock-settings-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Settings exported!');
+}
+
+// Import settings
+async function importSettings(file) {
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    
+    if (data.settings) settings = { ...settings, ...data.settings };
+    if (data.customTimezones) customTimezones = data.customTimezones;
+    if (data.removedTimezones) removedTimezones = data.removedTimezones;
+    if (data.timezoneOrder) timezoneOrder = data.timezoneOrder;
+    if (data.timezoneGroups) timezoneGroups = data.timezoneGroups;
+    if (data.timezoneNotes) timezoneNotes = data.timezoneNotes;
+    if (data.timezoneLabels) timezoneLabels = data.timezoneLabels;
+    if (data.alarms) alarms = data.alarms;
+    
+    await saveSettings();
+    location.reload();
+    showToast('Settings imported!');
+  } catch (error) {
+    console.error('Error importing settings:', error);
+    showToast('Error importing settings');
+  }
+}
+
+// Generate calendar link
+function generateCalendarLink(tzConfig, time, date) {
+  try {
+    const [hours, minutes] = time.split(':').map(Number);
+    const [month, day] = date.split(' ').slice(1);
+    const year = new Date().getFullYear();
+    const startDate = new Date(`${month} ${day}, ${year} ${hours}:${minutes}`);
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    
+    const formatDate = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const h = String(d.getHours()).padStart(2, '0');
+      const min = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      return `${y}${m}${day}T${h}${min}${s}Z`;
+    };
+    
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: `Meeting - ${tzConfig.name || tzConfig.timezone}`,
+      dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
+      details: `Timezone: ${tzConfig.timezone}`,
+      location: tzConfig.timezone
+    });
+    
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  } catch (error) {
+    return null;
+  }
+}
+
+// Restore recently removed timezone
+function restoreTimezone(timezoneId) {
+  if (removedTimezones.includes(timezoneId)) {
+    removedTimezones = removedTimezones.filter(id => id !== timezoneId);
+    saveSettings();
+    
+    const card = document.querySelector(`[data-timezone="${timezoneId}"]`);
+    if (card) {
+      card.style.display = '';
+    }
+    
+    showToast('Timezone restored');
+  }
+}
+
+// Share timezone view
+function shareTimezoneView() {
+  const visibleTimezones = [];
+  
+  Object.values(timezones).forEach(tz => {
+    if (!removedTimezones.includes(tz.cardId)) {
+      const timeDisplay = document.getElementById(tz.elementId);
+      const dateDisplay = document.getElementById(tz.dateId);
+      visibleTimezones.push({
+        name: tz.timezone,
+        time: timeDisplay?.textContent || '',
+        date: dateDisplay?.textContent || ''
+      });
+    }
+  });
+  
+  customTimezones.forEach(tz => {
+    const timeDisplay = document.getElementById(tz.elementId);
+    const dateDisplay = document.getElementById(tz.dateId);
+    visibleTimezones.push({
+      name: tz.name,
+      time: timeDisplay?.textContent || '',
+      date: dateDisplay?.textContent || ''
+    });
+  });
+  
+  const shareText = visibleTimezones.map(tz => 
+    `${tz.name}: ${tz.time} ${tz.date}`
+  ).join('\n');
+  
+  copyToClipboard(shareText);
+  showToast('Timezone view copied!');
 }
 
 // Update time for a specific timezone
@@ -833,6 +1037,43 @@ function updateTimezone(tzConfig) {
       indicator.className = `day-night-indicator ${isDay ? 'day' : 'night'}`;
     }
     
+    // Update business hours indicator
+    const card = document.querySelector(`[data-timezone="${tzConfig.cardId}"]`);
+    if (card && settings.showBusinessHours) {
+      const inBusinessHours = isBusinessHours(tzConfig.timezone);
+      if (inBusinessHours) {
+        card.classList.add('business-hours');
+        card.classList.remove('off-hours');
+      } else {
+        card.classList.add('off-hours');
+        card.classList.remove('business-hours');
+      }
+    } else if (card) {
+      card.classList.remove('business-hours', 'off-hours');
+    }
+    
+    // Update countdown timer
+    if (settings.showCountdown) {
+      const countdownId = `${tzConfig.cardId}-countdown`;
+      let countdownEl = document.getElementById(countdownId);
+      if (!countdownEl && card) {
+        countdownEl = document.createElement('div');
+        countdownEl.id = countdownId;
+        countdownEl.className = 'countdown-timer';
+        const timezoneInfo = card.querySelector('.timezone-info');
+        if (timezoneInfo) {
+          timezoneInfo.appendChild(countdownEl);
+        }
+      }
+      if (countdownEl) {
+        const { minutes, seconds } = getTimeUntilNextHour(tzConfig.timezone);
+        countdownEl.textContent = `Next hour in ${minutes}m ${seconds}s`;
+      }
+    } else {
+      const countdownEl = document.getElementById(`${tzConfig.cardId}-countdown`);
+      if (countdownEl) countdownEl.remove();
+    }
+    
   } catch (error) {
     console.error(`Error updating ${tzConfig.timezone}:`, error);
     const timeDisplay = document.getElementById(tzConfig.elementId);
@@ -850,7 +1091,11 @@ function updateAllClocks() {
 // Load settings from storage
 async function loadSettings() {
   try {
-    const result = await chrome.storage.local.get(['settings', 'customTimezones']);
+    const result = await chrome.storage.local.get([
+      'settings', 'customTimezones', 'removedTimezones', 
+      'timezoneOrder', 'timezoneGroups', 'timezoneNotes', 
+      'timezoneLabels', 'alarms', 'recentlyRemoved', 'currentGroup'
+    ]);
     if (result.settings) {
       settings = { ...settings, ...result.settings };
       // Ensure hour24 defaults to false (12-hour format)
@@ -862,6 +1107,27 @@ async function loadSettings() {
       // No settings saved, use defaults (12-hour format)
       settings.hour24 = false;
       applySettings();
+    }
+    
+    // Load new data structures
+    if (result.timezoneOrder) timezoneOrder = result.timezoneOrder;
+    if (result.timezoneGroups) timezoneGroups = result.timezoneGroups;
+    if (result.timezoneNotes) timezoneNotes = result.timezoneNotes;
+    if (result.timezoneLabels) timezoneLabels = result.timezoneLabels;
+    if (result.alarms) alarms = result.alarms;
+    if (result.recentlyRemoved) recentlyRemoved = result.recentlyRemoved;
+    if (result.currentGroup) currentGroup = result.currentGroup;
+    
+    // Load removed timezones
+    if (result.removedTimezones) {
+      removedTimezones = result.removedTimezones;
+      // Hide removed default timezones
+      removedTimezones.forEach(tzId => {
+        const card = document.querySelector(`[data-timezone="${tzId}"]`);
+        if (card) {
+          card.style.display = 'none';
+        }
+      });
     }
     
     // Load custom timezones
@@ -880,7 +1146,11 @@ async function loadSettings() {
 // Save settings to storage
 async function saveSettings() {
   try {
-    await chrome.storage.local.set({ settings, customTimezones });
+    await chrome.storage.local.set({ 
+      settings, customTimezones, removedTimezones,
+      timezoneOrder, timezoneGroups, timezoneNotes,
+      timezoneLabels, alarms, recentlyRemoved, currentGroup
+    });
     applySettings();
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -942,6 +1212,34 @@ function removeCustomTimezone(timezoneId) {
     if (card) {
       card.remove();
     }
+    showToast('Timezone removed');
+  } catch (error) {
+    console.error('Error removing timezone:', error);
+    showToast('Error removing timezone');
+  }
+}
+
+// Remove default timezone
+function removeDefaultTimezone(timezoneId) {
+  try {
+    // Check if it's a valid default timezone
+    if (!timezones[timezoneId]) {
+      showToast('Invalid timezone');
+      return;
+    }
+    
+    // Add to removed list if not already there
+    if (!removedTimezones.includes(timezoneId)) {
+      removedTimezones.push(timezoneId);
+      saveSettings();
+    }
+    
+    // Hide the card
+    const card = document.querySelector(`[data-timezone="${timezoneId}"]`);
+    if (card) {
+      card.style.display = 'none';
+    }
+    
     showToast('Timezone removed');
   } catch (error) {
     console.error('Error removing timezone:', error);
@@ -1025,6 +1323,18 @@ function applySettings() {
   document.getElementById('toggle-seconds').checked = settings.showSeconds;
   document.getElementById('toggle-offset').checked = settings.showOffset;
   document.getElementById('toggle-difference').checked = settings.showDifference;
+  if (document.getElementById('toggle-business-hours')) {
+    document.getElementById('toggle-business-hours').checked = settings.showBusinessHours || false;
+  }
+  if (document.getElementById('toggle-countdown')) {
+    document.getElementById('toggle-countdown').checked = settings.showCountdown || false;
+  }
+  if (document.getElementById('view-mode-select')) {
+    document.getElementById('view-mode-select').value = settings.viewMode || 'grid';
+  }
+  
+  // Apply view mode
+  applyViewMode();
   
   // Update all clocks
   updateAllClocks();
@@ -1037,6 +1347,281 @@ function showLoading() {
   setTimeout(() => {
     indicator.classList.remove('active');
   }, 500);
+}
+
+// Helper functions for new features
+function populateTimezoneSelect(selectId) {
+  const select = document.getElementById(selectId);
+  select.innerHTML = '';
+  
+  Object.values(timezones).forEach(tz => {
+    if (!removedTimezones.includes(tz.cardId)) {
+      const option = document.createElement('option');
+      option.value = tz.timezone;
+      option.textContent = `${tz.timezone} (${tz.cardId.toUpperCase()})`;
+      select.appendChild(option);
+    }
+  });
+  
+  customTimezones.forEach(tz => {
+    const option = document.createElement('option');
+    option.value = tz.timezone;
+    option.textContent = `${tz.name} (${tz.timezone})`;
+    select.appendChild(option);
+  });
+}
+
+function displayConverterResults(results) {
+  const container = document.getElementById('converter-results');
+  container.innerHTML = '<h4>Converted Times:</h4>';
+  
+  Object.entries(results).forEach(([tzId, data]) => {
+    const div = document.createElement('div');
+    div.className = 'converter-result-item';
+    div.innerHTML = `<strong>${data.name}:</strong> ${data.time}`;
+    container.appendChild(div);
+  });
+}
+
+function convertTime(inputTime, inputTimezone) {
+  try {
+    const [hours, minutes] = inputTime.split(':').map(Number);
+    const today = new Date();
+    const inputDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes);
+    
+    const results = {};
+    const allTimezones = [...Object.values(timezones), ...customTimezones];
+    
+    allTimezones.forEach(tzConfig => {
+      if (removedTimezones.includes(tzConfig.cardId)) return;
+      
+      try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tzConfig.timezone,
+          hour12: !settings.hour24,
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        const localTime = new Date(inputDate.toLocaleString('en-US', { timeZone: inputTimezone }));
+        const targetTime = new Date(localTime.toLocaleString('en-US', { timeZone: tzConfig.timezone }));
+        
+        results[tzConfig.cardId] = {
+          name: timezoneLabels[tzConfig.cardId] || tzConfig.name || tzConfig.timezone,
+          time: formatter.format(targetTime),
+          timezone: tzConfig.timezone
+        };
+      } catch (error) {
+        console.error(`Error converting time for ${tzConfig.timezone}:`, error);
+      }
+    });
+    
+    return results;
+  } catch (error) {
+    console.error('Error converting time:', error);
+    return {};
+  }
+}
+
+function populateMeetingTimezones() {
+  const container = document.getElementById('meeting-timezones');
+  container.innerHTML = '<h4>Select Timezones:</h4>';
+  
+  const allTimezones = [...Object.values(timezones), ...customTimezones];
+  allTimezones.forEach(tz => {
+    if (removedTimezones.includes(tz.cardId)) return;
+    
+    const label = document.createElement('label');
+    label.className = 'meeting-tz-checkbox';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = tz.cardId;
+    checkbox.id = `meeting-tz-${tz.cardId}`;
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(` ${timezoneLabels[tz.cardId] || tz.name || tz.timezone}`));
+    container.appendChild(label);
+  });
+  
+  document.getElementById('find-meeting-btn').addEventListener('click', () => {
+    const selected = Array.from(container.querySelectorAll('input:checked')).map(cb => cb.value);
+    if (selected.length > 0) {
+      findBestMeetingTimes(selected);
+    } else {
+      showToast('Please select at least one timezone');
+    }
+  });
+}
+
+function findBestMeetingTimes(timezoneIds) {
+  const now = new Date();
+  const suggestions = [];
+  
+  for (let day = 0; day < 7; day++) {
+    const checkDate = new Date(now);
+    checkDate.setDate(checkDate.getDate() + day);
+    
+    for (let hour = 9; hour < 17; hour++) {
+      checkDate.setHours(hour, 0, 0, 0);
+      
+      let allInBusinessHours = true;
+      const times = {};
+      
+      timezoneIds.forEach(tzId => {
+        const tzConfig = timezones[tzId] || customTimezones.find(t => t.cardId === tzId);
+        if (!tzConfig) return;
+        
+        try {
+          const tzTime = new Date(checkDate.toLocaleString('en-US', { timeZone: tzConfig.timezone }));
+          const tzHour = tzTime.getHours();
+          times[tzId] = tzHour;
+          
+          if (tzHour < 9 || tzHour >= 17) {
+            allInBusinessHours = false;
+          }
+        } catch (error) {
+          allInBusinessHours = false;
+        }
+      });
+      
+      if (allInBusinessHours) {
+        suggestions.push({
+          date: new Date(checkDate),
+          times,
+          score: timezoneIds.length
+        });
+      }
+    }
+  }
+  
+  displayMeetingResults(suggestions.sort((a, b) => b.score - a.score).slice(0, 5));
+}
+
+function displayMeetingResults(suggestions) {
+  const container = document.getElementById('meeting-results');
+  container.innerHTML = '<h4>Best Meeting Times:</h4>';
+  
+  if (suggestions.length === 0) {
+    container.innerHTML += '<p>No suitable times found in the next 7 days.</p>';
+    return;
+  }
+  
+  suggestions.forEach((suggestion, index) => {
+    const div = document.createElement('div');
+    div.className = 'meeting-suggestion';
+    const dateStr = suggestion.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const timeStr = suggestion.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: !settings.hour24 });
+    div.innerHTML = `<strong>${index + 1}. ${dateStr} at ${timeStr}</strong>`;
+    container.appendChild(div);
+  });
+}
+
+function displayQuickSearchResult(result) {
+  const container = document.getElementById('quick-search-results');
+  if (result) {
+    container.innerHTML = `
+      <div class="quick-search-result">
+        <div class="flag-icon">${result.flag}</div>
+        <div>
+          <strong>${result.name}</strong><br>
+          <span class="time-display">${result.time}</span><br>
+          <small>${result.timezone}</small>
+        </div>
+      </div>
+    `;
+  } else {
+    container.innerHTML = '<div class="no-results">No timezone found</div>';
+  }
+}
+
+function setupContextMenu() {
+  let contextMenu = document.getElementById('context-menu');
+  let contextCard = null;
+  
+  document.addEventListener('contextmenu', (e) => {
+    const card = e.target.closest('.clock-card');
+    if (card) {
+      e.preventDefault();
+      contextCard = card;
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = e.pageX + 'px';
+      contextMenu.style.top = e.pageY + 'px';
+    }
+  });
+  
+  document.addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+  });
+  
+  contextMenu.querySelectorAll('.context-menu-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (contextCard) {
+        handleContextAction(action, contextCard);
+      }
+      contextMenu.style.display = 'none';
+    });
+  });
+}
+
+function handleContextAction(action, card) {
+  const tzId = card.dataset.timezone;
+  const tzConfig = timezones[tzId] || customTimezones.find(t => t.cardId === tzId);
+  if (!tzConfig) return;
+  
+  const timeDisplay = document.getElementById(tzConfig.elementId);
+  const dateDisplay = document.getElementById(tzConfig.dateId);
+  
+  switch(action) {
+    case 'copy-time':
+      copyToClipboard(timeDisplay.textContent);
+      break;
+    case 'copy-date':
+      copyToClipboard(dateDisplay.textContent);
+      break;
+    case 'copy-all':
+      copyToClipboard(`${tzConfig.name || tzConfig.timezone}: ${timeDisplay.textContent} ${dateDisplay.textContent}`);
+      break;
+    case 'add-calendar':
+      const link = generateCalendarLink(tzConfig, timeDisplay.textContent, dateDisplay.textContent);
+      if (link) window.open(link, '_blank');
+      break;
+    case 'edit-label':
+      const newLabel = prompt('Enter custom label:', timezoneLabels[tzId] || '');
+      if (newLabel !== null) {
+        timezoneLabels[tzId] = newLabel;
+        saveSettings();
+        updateTimezoneDisplay(tzId);
+      }
+      break;
+    case 'add-note':
+      const note = prompt('Enter note:', timezoneNotes[tzId] || '');
+      if (note !== null) {
+        timezoneNotes[tzId] = note;
+        saveSettings();
+        showToast('Note saved');
+      }
+      break;
+    case 'remove':
+      if (timezones[tzId]) {
+        removeDefaultTimezone(tzId);
+      } else {
+        removeCustomTimezone(tzId);
+      }
+      break;
+  }
+}
+
+function updateTimezoneDisplay(tzId) {
+  const card = document.querySelector(`[data-timezone="${tzId}"]`);
+  if (card && timezoneLabels[tzId]) {
+    const nameEl = card.querySelector('.timezone-name');
+    if (nameEl) nameEl.textContent = timezoneLabels[tzId];
+  }
+}
+
+function applyViewMode() {
+  const grid = document.getElementById('clock-grid');
+  grid.className = `clock-grid ${settings.viewMode}`;
 }
 
 // Initialize event listeners
@@ -1097,11 +1682,105 @@ function initEventListeners() {
     saveSettings();
   });
   
-  // Copy to clipboard on card click
+  document.getElementById('toggle-business-hours').addEventListener('change', (e) => {
+    settings.showBusinessHours = e.target.checked;
+    saveSettings();
+  });
+  
+  document.getElementById('toggle-countdown').addEventListener('change', (e) => {
+    settings.showCountdown = e.target.checked;
+    saveSettings();
+  });
+  
+  document.getElementById('view-mode-select').addEventListener('change', (e) => {
+    settings.viewMode = e.target.value;
+    saveSettings();
+    applyViewMode();
+  });
+  
+  // Export/Import
+  document.getElementById('export-btn').addEventListener('click', exportSettings);
+  document.getElementById('import-btn').addEventListener('click', () => {
+    document.getElementById('import-input').click();
+  });
+  document.getElementById('import-input').addEventListener('change', (e) => {
+    if (e.target.files[0]) {
+      importSettings(e.target.files[0]);
+    }
+  });
+  
+  // Converter panel
+  document.getElementById('converter-btn').addEventListener('click', () => {
+    document.getElementById('converter-panel').classList.add('active');
+    populateTimezoneSelect('converter-from-tz');
+  });
+  document.getElementById('close-converter').addEventListener('click', () => {
+    document.getElementById('converter-panel').classList.remove('active');
+  });
+  document.getElementById('convert-time-btn').addEventListener('click', () => {
+    const time = document.getElementById('converter-time-input').value;
+    const fromTz = document.getElementById('converter-from-tz').value;
+    if (time && fromTz) {
+      const results = convertTime(time, fromTz);
+      displayConverterResults(results);
+    }
+  });
+  
+  // Meeting finder
+  document.getElementById('meeting-btn').addEventListener('click', () => {
+    document.getElementById('meeting-panel').classList.add('active');
+    populateMeetingTimezones();
+  });
+  document.getElementById('close-meeting').addEventListener('click', () => {
+    document.getElementById('meeting-panel').classList.remove('active');
+  });
+  
+  // Quick search
+  document.getElementById('search-btn').addEventListener('click', () => {
+    document.getElementById('quick-search-panel').classList.add('active');
+    document.getElementById('quick-search-input').focus();
+  });
+  document.getElementById('close-quick-search').addEventListener('click', () => {
+    document.getElementById('quick-search-panel').classList.remove('active');
+  });
+  document.getElementById('quick-search-input').addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    if (query) {
+      const result = quickTimeSearch(query);
+      displayQuickSearchResult(result);
+    } else {
+      document.getElementById('quick-search-results').innerHTML = '';
+    }
+  });
+  
+  // Share
+  document.getElementById('share-btn').addEventListener('click', shareTimezoneView);
+  
+  // Context menu
+  setupContextMenu();
+  
+  // Copy to clipboard on card click and add remove buttons to default timezones
   Object.values(timezones).forEach((tzConfig, index) => {
     const card = document.querySelector(`[data-timezone="${tzConfig.cardId}"]`);
     if (card) {
-      card.addEventListener('click', async () => {
+      // Add remove button if it doesn't exist
+      if (!card.querySelector('.remove-timezone')) {
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-timezone';
+        removeBtn.setAttribute('data-id', tzConfig.cardId);
+        removeBtn.setAttribute('title', 'Remove timezone');
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeDefaultTimezone(tzConfig.cardId);
+        });
+        card.appendChild(removeBtn);
+      }
+      
+      card.addEventListener('click', async (e) => {
+        // Don't copy if clicking the remove button
+        if (e.target.classList.contains('remove-timezone')) return;
+        
         const timeDisplay = document.getElementById(tzConfig.elementId);
         const dateDisplay = document.getElementById(tzConfig.dateId);
         const timeText = timeDisplay.textContent;
@@ -1265,6 +1944,60 @@ function initEventListeners() {
   }
 }
 
+// Auto-detect and add local timezone if not present
+async function autoDetectLocalTimezone() {
+  const localTz = getLocalTimezone();
+  
+  // Check if local timezone is already added
+  const allTimezones = [...Object.values(timezones), ...customTimezones];
+  const exists = allTimezones.some(tz => tz.timezone === localTz);
+  
+  if (!exists) {
+    // Find matching timezone in popular list
+    const match = popularTimezones.find(tz => tz.timezone === localTz);
+    if (match) {
+      addCustomTimezone(match);
+      showToast(`Added your local timezone: ${match.name}`);
+    }
+  }
+}
+
+// Get and display timezone statistics
+function getTimezoneStatistics() {
+  const stats = {
+    total: 0,
+    inBusinessHours: 0,
+    ahead: 0,
+    behind: 0,
+    same: 0
+  };
+  
+  const localTz = getLocalTimezone();
+  const now = new Date();
+  
+  const allTimezones = [...Object.values(timezones), ...customTimezones];
+  allTimezones.forEach(tzConfig => {
+    if (removedTimezones.includes(tzConfig.cardId)) return;
+    
+    stats.total++;
+    if (isBusinessHours(tzConfig.timezone)) stats.inBusinessHours++;
+    
+    try {
+      const localTime = new Date(now.toLocaleString('en-US', { timeZone: localTz }));
+      const tzTime = new Date(now.toLocaleString('en-US', { timeZone: tzConfig.timezone }));
+      const diff = (tzTime - localTime) / (1000 * 60 * 60);
+      
+      if (Math.abs(diff) < 0.5) stats.same++;
+      else if (diff > 0) stats.ahead++;
+      else stats.behind++;
+    } catch (error) {
+      console.error(`Error calculating stats for ${tzConfig.timezone}:`, error);
+    }
+  });
+  
+  return stats;
+}
+
 // Initialize and start updating
 async function init() {
   // Show loading
@@ -1272,6 +2005,9 @@ async function init() {
   
   // Load settings
   await loadSettings();
+  
+  // Auto-detect local timezone
+  await autoDetectLocalTimezone();
   
   // Initialize event listeners
   initEventListeners();
@@ -1281,6 +2017,15 @@ async function init() {
   
   // Update every second
   setInterval(updateAllClocks, 1000);
+  
+  // Update countdown every second if enabled
+  if (settings.showCountdown) {
+    setInterval(() => {
+      if (settings.showCountdown) {
+        updateAllClocks();
+      }
+    }, 1000);
+  }
 }
 
 // Start when DOM is ready

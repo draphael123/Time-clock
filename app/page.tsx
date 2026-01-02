@@ -24,6 +24,7 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showUpdateBanner, setShowUpdateBanner] = useState(false)
   const [stats] = useState({
     timezones: 24,
     users: '1000+',
@@ -60,8 +61,20 @@ export default function Home() {
     if (savedDarkMode) {
       document.documentElement.classList.add('dark')
     }
+    
+    // Check if update banner was dismissed
+    const bannerDismissed = localStorage.getItem('updateBannerDismissed')
+    if (!bannerDismissed) {
+      setShowUpdateBanner(true)
+    }
+    
     setLoading(false)
   }, [])
+  
+  const dismissUpdateBanner = () => {
+    setShowUpdateBanner(false)
+    localStorage.setItem('updateBannerDismissed', 'true')
+  }
 
   useEffect(() => {
     const updateTimes = () => {
@@ -161,6 +174,42 @@ export default function Home() {
       <a href="#features" className="skip-to-content">
         Skip to main content
       </a>
+
+      {/* Update Notification Banner */}
+      {showUpdateBanner && (
+        <div className="update-banner fade-in-down">
+          <div className="update-banner-content">
+            <div className="update-banner-icon">🎉</div>
+            <div className="update-banner-text">
+              <div className="update-banner-title">
+                <strong>Version 2.0.0 Available!</strong>
+                <span className="update-badge">NEW</span>
+              </div>
+              <div className="update-banner-description">
+                18+ new features including Business Hours, Time Converter, Meeting Finder, and more!
+              </div>
+              <div className="update-banner-instructions">
+                <strong>To update:</strong> Go to <code>chrome://extensions/</code> → Find "World Clock" → Click <strong>Reload</strong> 🔄
+              </div>
+            </div>
+            <div className="update-banner-actions">
+              <button 
+                onClick={handleDownload}
+                className="update-banner-btn update-banner-btn-primary"
+              >
+                Download Latest
+              </button>
+              <button 
+                onClick={dismissUpdateBanner}
+                className="update-banner-btn update-banner-btn-close"
+                aria-label="Dismiss update notification"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sticky Navigation Header */}
       <nav className="sticky-nav">
@@ -2298,6 +2347,169 @@ export default function Home() {
           background: #1a1a1a;
         }
 
+        /* Update Banner */
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fade-in-down {
+          animation: fadeInDown 0.5s ease-out;
+        }
+
+        .update-banner {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1001;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+          border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .update-banner-content {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 16px 20px;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+
+        .update-banner-icon {
+          font-size: 2rem;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .update-banner-text {
+          flex: 1;
+          min-width: 250px;
+          color: white;
+        }
+
+        .update-banner-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 8px;
+          font-size: 1.1rem;
+        }
+
+        .update-badge {
+          background: rgba(255, 255, 255, 0.3);
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: bold;
+          backdrop-filter: blur(10px);
+        }
+
+        .update-banner-description {
+          font-size: 0.9rem;
+          opacity: 0.95;
+          margin-bottom: 8px;
+        }
+
+        .update-banner-instructions {
+          font-size: 0.85rem;
+          opacity: 0.9;
+          margin-top: 8px;
+        }
+
+        .update-banner-instructions code {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: 'Courier New', monospace;
+          font-size: 0.9em;
+        }
+
+        .update-banner-actions {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .update-banner-btn {
+          padding: 10px 20px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 0.9rem;
+          white-space: nowrap;
+        }
+
+        .update-banner-btn-primary {
+          background: white;
+          color: #667eea;
+        }
+
+        .update-banner-btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .update-banner-btn-close {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          font-size: 1.2rem;
+        }
+
+        .update-banner-btn-close:hover {
+          background: rgba(255, 255, 255, 0.3);
+          transform: scale(1.1);
+        }
+
+        :global(.dark) .update-banner {
+          background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+
+        @media (max-width: 768px) {
+          .update-banner-content {
+            padding: 12px 16px;
+            gap: 12px;
+          }
+
+          .update-banner-title {
+            font-size: 1rem;
+          }
+
+          .update-banner-description {
+            font-size: 0.85rem;
+          }
+
+          .update-banner-instructions {
+            font-size: 0.8rem;
+          }
+
+          .update-banner-actions {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .update-banner-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+          }
+        }
+
         /* Sticky Navigation */
         .sticky-nav {
           position: fixed;
@@ -2309,6 +2521,27 @@ export default function Home() {
           box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
           z-index: 1000;
           transition: all 0.3s ease;
+        }
+
+        /* Push nav down when banner is visible */
+        .sticky-nav.with-banner {
+          top: auto;
+        }
+        
+        /* Add top padding to first section when banner exists */
+        .update-banner ~ * .hero {
+          padding-top: 140px;
+        }
+
+        /* Adjust nav position when banner is visible - push nav down */
+        .sticky-nav.with-banner {
+          top: 100px;
+        }
+        
+        @media (max-width: 768px) {
+          .sticky-nav.with-banner {
+            top: 120px;
+          }
         }
 
         :global(.dark) .sticky-nav {

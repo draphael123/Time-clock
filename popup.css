@@ -711,7 +711,7 @@ header h1 {
 .remove-timezone {
   position: absolute;
   top: 5px;
-  right: 5px;
+  left: 5px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -740,4 +740,317 @@ header h1 {
 .time-display.updating {
   opacity: 0.5;
   transition: opacity 0.2s ease;
+}
+
+/* Business hours indicator */
+.clock-card.business-hours {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+}
+
+.clock-card.off-hours {
+  opacity: 0.7;
+  filter: grayscale(0.3);
+}
+
+/* Countdown timer */
+.countdown-timer {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Converter Panel */
+.converter-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.converter-panel.active {
+  display: flex;
+}
+
+.converter-content {
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.converter-input {
+  margin-bottom: 15px;
+}
+
+.converter-input label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.converter-input input,
+.converter-input select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.converter-results {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.converter-result-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 6px;
+}
+
+/* Meeting Panel */
+.meeting-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.meeting-panel.active {
+  display: flex;
+}
+
+.meeting-content {
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.meeting-timezones {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+}
+
+.meeting-tz-checkbox {
+  display: block;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.meeting-results {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.meeting-suggestion {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+/* Quick Search Panel */
+.quick-search-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.quick-search-panel.active {
+  display: flex;
+}
+
+.quick-search-content {
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+}
+
+#quick-search-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.quick-search-results {
+  margin-top: 15px;
+}
+
+.quick-search-result {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  display: none;
+  min-width: 150px;
+  padding: 5px 0;
+}
+
+.context-menu-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background 0.2s ease;
+}
+
+.context-menu-item:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+/* View Modes */
+.clock-grid.list {
+  grid-template-columns: 1fr;
+}
+
+.clock-grid.list .clock-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 15px;
+  gap: 15px;
+}
+
+.clock-grid.list .flag-icon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.clock-grid.list .time-display {
+  font-size: 20px;
+  margin: 0;
+}
+
+.clock-grid.table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clock-grid.table .clock-card {
+  display: table-row;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.clock-grid.table .clock-card > * {
+  display: table-cell;
+  padding: 10px;
+  vertical-align: middle;
+}
+
+/* Buttons */
+.btn-primary, .btn-secondary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  margin: 5px;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--text-primary);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.close-converter,
+.close-meeting,
+.close-quick-search {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.close-converter:hover,
+.close-meeting:hover,
+.close-quick-search:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
 }

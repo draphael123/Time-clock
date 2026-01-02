@@ -8,18 +8,62 @@ A beautiful, feature-rich Chrome extension that displays time in EST, PST, Brazi
 
 ## ✨ Features
 
+### Core Features
 - 🕐 **Real-time Updates** - Clocks update every second
-- 🌍 **4 Timezones** - EST, PST, Brazil, and Italy
+- 🌍 **560+ Timezones** - Add any timezone from around the world
 - 🎨 **Beautiful Design** - Modern gradient backgrounds and smooth animations
 - 🌙 **Dark Mode** - Toggle between light and dark themes
 - 📋 **Copy to Clipboard** - Click any timezone card to copy the time
 - ⚙️ **Settings Panel** - Customize 12/24-hour format, show/hide seconds, offsets, and differences
 - ⌨️ **Keyboard Shortcuts** - Full keyboard support for power users
 - ☀️ **Day/Night Indicators** - Visual indicators showing day or night in each timezone
-- 📐 **Compact Mode** - Minimal view option
+- 📐 **Multiple View Modes** - Grid, List, and Table views
 - 🔄 **Manual Refresh** - Refresh button for instant updates
 - 💾 **Settings Persistence** - Your preferences are saved automatically
-- 🇵🇭 **Filipino Flag Icon** - Beautiful icon representing the extension
+
+### New in Version 2.0
+- 🏢 **Business Hours Indicator** - Color-coded cards showing business hours
+- 🕐 **Timezone Converter** - Convert any time across all timezones
+- 📅 **Meeting Time Finder** - Find best meeting times across multiple zones
+- 🔍 **Quick Time Search** - Search for any timezone instantly
+- 💾 **Export/Import Settings** - Backup and restore your configuration
+- ⏱️ **Countdown Timers** - See time until next hour
+- 📤 **Share Timezone View** - Copy all times to clipboard
+- 📝 **Custom Labels** - Rename timezones with custom names
+- 📌 **Timezone Notes** - Add notes to timezones
+- 📅 **Calendar Integration** - Add times directly to Google Calendar
+- 🖱️ **Right-Click Context Menu** - Quick actions on timezone cards
+- 🌍 **Auto-Detect Local Timezone** - Automatically adds your timezone
+- ❌ **Remove Timezones** - Remove any timezone you don't need
+
+## 🆕 Version 2.0.0 - Major Update!
+
+**New Features Added:**
+- ✅ Business hours indicator (color-coded cards)
+- ✅ Timezone converter tool
+- ✅ Meeting time finder
+- ✅ Quick time search
+- ✅ Export/import settings
+- ✅ Countdown timers
+- ✅ Multiple view modes (Grid/List/Table)
+- ✅ Calendar integration
+- ✅ Right-click context menu
+- ✅ Custom timezone labels
+- ✅ Timezone notes
+- ✅ Share timezone view
+- ✅ Auto-detect local timezone
+- ✅ And 5+ more features!
+
+**To Update:**
+1. If you have the extension loaded as unpacked:
+   - Go to `chrome://extensions/`
+   - Click the **reload** button (🔄) on the World Clock extension
+   - Done! New features are now available
+
+2. If you installed from a ZIP file:
+   - Download the latest version from GitHub
+   - Extract and replace your old extension files
+   - Go to `chrome://extensions/` and click **reload**
 
 ## 🚀 Quick Installation
 

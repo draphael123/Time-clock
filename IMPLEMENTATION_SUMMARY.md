@@ -230,3 +230,4 @@ The extension has all enhancement code ready in `popup-enhancements.js`:
 
 The extension enhancements just need UI integration, which can be done by adding the HTML elements and connecting them to the existing functions in `popup-enhancements.js`.
 
+
