@@ -13,39 +13,62 @@
       <div class="header-content">
         <h1>🌏 World Clock</h1>
         <div class="header-controls">
-          <button class="icon-btn" id="refresh-btn" title="Refresh (R)" aria-label="Refresh clocks">
-            <span>🔄</span>
-          </button>
-          <button class="icon-btn" id="settings-btn" title="Settings (S)" aria-label="Open settings">
-            <span>⚙️</span>
-          </button>
+          <!-- Primary Actions -->
           <button class="icon-btn" id="dark-mode-btn" title="Toggle dark mode (D)" aria-label="Toggle dark mode">
             <span>🌙</span>
-          </button>
-          <button class="icon-btn" id="compact-mode-btn" title="Toggle compact mode (C)" aria-label="Toggle compact mode">
-            <span>📐</span>
           </button>
           <button class="icon-btn add-timezone-header-btn" id="add-timezone-btn" title="Add timezone" aria-label="Add timezone">
             <span>+</span>
           </button>
-          <button class="icon-btn" id="converter-btn" title="Time Converter" aria-label="Time Converter">
-            <span>🕐</span>
+          <button class="icon-btn" id="settings-btn" title="Settings (S)" aria-label="Open settings">
+            <span>⚙️</span>
           </button>
-          <button class="icon-btn" id="meeting-btn" title="Find Meeting Time" aria-label="Find Meeting Time">
-            <span>📅</span>
-          </button>
-          <button class="icon-btn" id="search-btn" title="Quick Search" aria-label="Quick Search">
-            <span>🔍</span>
-          </button>
-          <button class="icon-btn" id="share-btn" title="Share View" aria-label="Share View">
-            <span>📤</span>
-          </button>
+          <!-- More Menu -->
+          <div class="more-menu-container">
+            <button class="icon-btn" id="more-menu-btn" title="More tools" aria-label="More tools" aria-expanded="false">
+              <span>☰</span>
+            </button>
+            <div class="more-menu" id="more-menu">
+              <button class="more-menu-item" id="converter-btn">
+                <span class="menu-icon">🕐</span> Time Converter
+              </button>
+              <button class="more-menu-item" id="stopwatch-btn">
+                <span class="menu-icon">⏱️</span> Stopwatch & Timer
+              </button>
+              <button class="more-menu-item" id="alarm-btn">
+                <span class="menu-icon">⏰</span> Alarms
+              </button>
+              <div class="menu-divider"></div>
+              <button class="more-menu-item" id="timeline-btn">
+                <span class="menu-icon">📊</span> Timeline View
+              </button>
+              <button class="more-menu-item" id="worldmap-btn">
+                <span class="menu-icon">🗺️</span> World Map
+              </button>
+              <button class="more-menu-item" id="profiles-btn">
+                <span class="menu-icon">👤</span> Profiles
+              </button>
+              <button class="more-menu-item" id="holidays-btn">
+                <span class="menu-icon">🎉</span> Holidays
+              </button>
+              <div class="menu-divider"></div>
+              <button class="more-menu-item" id="search-btn">
+                <span class="menu-icon">🔍</span> Quick Search
+              </button>
+              <button class="more-menu-item" id="refresh-btn">
+                <span class="menu-icon">🔄</span> Refresh
+              </button>
+              <div class="menu-divider"></div>
+              <button class="more-menu-item" id="target-countdown-btn">
+                <span class="menu-icon">🎯</span> Countdown to Time
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="add-timezone-section">
-        <button class="add-timezone-btn-large" id="add-timezone-btn-large">
-          ➕ Add Timezone
-        </button>
+      <!-- Keyboard hint -->
+      <div class="keyboard-hint" id="keyboard-hint">
+        Press <kbd>?</kbd> for keyboard shortcuts
       </div>
       <div class="loading-indicator" id="loading-indicator"></div>
     </header>
@@ -92,6 +115,36 @@
         </div>
         <div class="setting-item">
           <label>
+            <input type="checkbox" id="toggle-analog">
+            <span>Show analog clocks</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-chimes">
+            <span>Hourly chimes 🔔</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-speak-time">
+            <span>Speak time hourly 🔊</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-weather">
+            <span>Show weather</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="toggle-sun-times">
+            <span>Show sunrise/sunset</span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <label>
             <span>View Mode:</span>
             <select id="view-mode-select">
               <option value="grid">Grid</option>
@@ -105,6 +158,27 @@
           <input type="file" id="import-input" accept=".json" style="display: none;">
           <button class="btn-secondary" id="import-btn">Import Settings</button>
         </div>
+        
+        <div class="badge-settings">
+          <h4>Extension Badge</h4>
+          <div class="badge-option">
+            <input type="radio" name="badge-mode" id="badge-none" value="none" checked>
+            <label for="badge-none">None</label>
+          </div>
+          <div class="badge-option">
+            <input type="radio" name="badge-mode" id="badge-time" value="time">
+            <label for="badge-time">Current time</label>
+          </div>
+          <div class="badge-option">
+            <input type="radio" name="badge-mode" id="badge-next-hour" value="next-hour">
+            <label for="badge-next-hour">Minutes to next hour</label>
+          </div>
+          <div class="badge-option">
+            <input type="radio" name="badge-mode" id="badge-countdown" value="countdown">
+            <label for="badge-countdown">Hours until 5 PM</label>
+          </div>
+        </div>
+        
         <button class="close-settings" id="close-settings">Close</button>
       </div>
     </div>
@@ -202,17 +276,6 @@
       </div>
     </div>
 
-    <!-- Meeting Finder Panel -->
-    <div class="meeting-panel" id="meeting-panel">
-      <div class="meeting-content">
-        <h3>Find Meeting Time</h3>
-        <div class="meeting-timezones" id="meeting-timezones"></div>
-        <button class="btn-primary" id="find-meeting-btn">Find Best Times</button>
-        <div class="meeting-results" id="meeting-results"></div>
-        <button class="close-meeting" id="close-meeting">Close</button>
-      </div>
-    </div>
-
     <!-- Quick Search Panel -->
     <div class="quick-search-panel" id="quick-search-panel">
       <div class="quick-search-content">
@@ -234,6 +297,285 @@
       <div class="context-menu-item" data-action="remove">Remove</div>
     </div>
 
+    <!-- Stopwatch & Timer Panel -->
+    <div class="stopwatch-panel" id="stopwatch-panel">
+      <div class="stopwatch-content">
+        <div class="stopwatch-tabs">
+          <button class="stopwatch-tab active" data-tab="stopwatch">Stopwatch</button>
+          <button class="stopwatch-tab" data-tab="timer">Timer</button>
+          <button class="stopwatch-tab" data-tab="pomodoro">Pomodoro</button>
+        </div>
+        
+        <!-- Stopwatch View -->
+        <div class="stopwatch-view active" id="stopwatch-view">
+          <div class="stopwatch-display" id="stopwatch-display">00:00:00.00</div>
+          <div class="stopwatch-controls">
+            <button class="stopwatch-control-btn start" id="stopwatch-start">▶ Start</button>
+            <button class="stopwatch-control-btn stop" id="stopwatch-stop" disabled>⏸ Stop</button>
+            <button class="stopwatch-control-btn reset" id="stopwatch-reset">↺ Reset</button>
+            <button class="stopwatch-control-btn lap" id="stopwatch-lap" disabled>🏁 Lap</button>
+          </div>
+          <div class="lap-times" id="lap-times"></div>
+        </div>
+        
+        <!-- Timer View -->
+        <div class="stopwatch-view" id="timer-view">
+          <div class="timer-input-group">
+            <div class="timer-input-wrapper">
+              <input type="number" id="timer-hours" min="0" max="99" value="0" class="timer-input">
+              <label>Hours</label>
+            </div>
+            <span class="timer-separator">:</span>
+            <div class="timer-input-wrapper">
+              <input type="number" id="timer-minutes" min="0" max="59" value="5" class="timer-input">
+              <label>Minutes</label>
+            </div>
+            <span class="timer-separator">:</span>
+            <div class="timer-input-wrapper">
+              <input type="number" id="timer-seconds" min="0" max="59" value="0" class="timer-input">
+              <label>Seconds</label>
+            </div>
+          </div>
+          <div class="timer-display" id="timer-display">00:05:00</div>
+          <div class="timer-progress-bar">
+            <div class="timer-progress" id="timer-progress"></div>
+          </div>
+          <div class="timer-controls">
+            <button class="timer-control-btn start" id="timer-start">▶ Start</button>
+            <button class="timer-control-btn stop" id="timer-pause" disabled>⏸ Pause</button>
+            <button class="timer-control-btn reset" id="timer-reset">↺ Reset</button>
+          </div>
+          <div class="timer-presets">
+            <button class="timer-preset" data-minutes="1">1 min</button>
+            <button class="timer-preset" data-minutes="5">5 min</button>
+            <button class="timer-preset" data-minutes="10">10 min</button>
+            <button class="timer-preset" data-minutes="15">15 min</button>
+            <button class="timer-preset" data-minutes="30">30 min</button>
+            <button class="timer-preset" data-minutes="60">1 hour</button>
+          </div>
+        </div>
+        
+        <!-- Pomodoro View -->
+        <div class="stopwatch-view" id="pomodoro-view">
+          <div class="pomodoro-status" id="pomodoro-status">Focus Time</div>
+          <div class="pomodoro-display" id="pomodoro-display">25:00</div>
+          <div class="pomodoro-progress-ring">
+            <svg class="progress-ring" width="200" height="200">
+              <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+              <circle class="progress-ring-progress" id="pomodoro-ring" cx="100" cy="100" r="90" />
+            </svg>
+          </div>
+          <div class="pomodoro-controls">
+            <button class="pomodoro-control-btn start" id="pomodoro-start">▶ Start</button>
+            <button class="pomodoro-control-btn stop" id="pomodoro-pause" disabled>⏸ Pause</button>
+            <button class="pomodoro-control-btn reset" id="pomodoro-reset">↺ Reset</button>
+            <button class="pomodoro-control-btn skip" id="pomodoro-skip">⏭ Skip</button>
+          </div>
+          <div class="pomodoro-stats">
+            <div class="pomodoro-stat">
+              <span class="pomodoro-stat-value" id="pomodoro-sessions">0</span>
+              <span class="pomodoro-stat-label">Sessions</span>
+            </div>
+            <div class="pomodoro-stat">
+              <span class="pomodoro-stat-value" id="pomodoro-total-time">0m</span>
+              <span class="pomodoro-stat-label">Focus Time</span>
+            </div>
+          </div>
+          <div class="pomodoro-settings">
+            <label>Work: <input type="number" id="pomodoro-work" value="25" min="1" max="60"> min</label>
+            <label>Break: <input type="number" id="pomodoro-break" value="5" min="1" max="30"> min</label>
+            <label>Long Break: <input type="number" id="pomodoro-long-break" value="15" min="1" max="60"> min</label>
+          </div>
+        </div>
+        
+        <button class="close-stopwatch" id="close-stopwatch">Close</button>
+      </div>
+    </div>
+
+    <!-- Alarm Panel -->
+    <div class="alarm-panel" id="alarm-panel">
+      <div class="alarm-content">
+        <h3>⏰ Alarms</h3>
+        <div class="alarm-form">
+          <div class="alarm-time-input">
+            <input type="time" id="alarm-time" required>
+            <select id="alarm-timezone">
+              <option value="local">Local Time</option>
+            </select>
+          </div>
+          <input type="text" id="alarm-label" placeholder="Alarm label (optional)">
+          <div class="alarm-repeat">
+            <label><input type="checkbox" id="alarm-repeat-check"> Repeat</label>
+            <div class="alarm-days" id="alarm-days">
+              <label><input type="checkbox" value="0">Su</label>
+              <label><input type="checkbox" value="1">Mo</label>
+              <label><input type="checkbox" value="2">Tu</label>
+              <label><input type="checkbox" value="3">We</label>
+              <label><input type="checkbox" value="4">Th</label>
+              <label><input type="checkbox" value="5">Fr</label>
+              <label><input type="checkbox" value="6">Sa</label>
+            </div>
+          </div>
+          <select id="alarm-sound">
+            <option value="chime">Chime</option>
+            <option value="bell">Bell</option>
+            <option value="digital">Digital</option>
+            <option value="gentle">Gentle</option>
+          </select>
+          <button class="btn-primary" id="add-alarm-btn">➕ Add Alarm</button>
+        </div>
+        <div class="alarm-list" id="alarm-list">
+          <p class="no-alarms">No alarms set</p>
+        </div>
+        <button class="close-alarm" id="close-alarm">Close</button>
+      </div>
+    </div>
+
+    <!-- Timeline View Panel -->
+    <div class="timeline-panel" id="timeline-panel">
+      <div class="timeline-content">
+        <h3>📊 Timeline Comparison</h3>
+        <div class="timeline-controls">
+          <button class="timeline-nav" id="timeline-prev">◀ -1 hour</button>
+          <span class="timeline-current" id="timeline-current">Now</span>
+          <button class="timeline-nav" id="timeline-next">+1 hour ▶</button>
+        </div>
+        <div class="timeline-container" id="timeline-container">
+          <div class="timeline-hours">
+            <span>0</span><span>6</span><span>12</span><span>18</span><span>24</span>
+          </div>
+        </div>
+        <div class="timeline-legend">
+          <span class="legend-item"><span class="legend-color night"></span> Night (0-6)</span>
+          <span class="legend-item"><span class="legend-color morning"></span> Morning (6-12)</span>
+          <span class="legend-item"><span class="legend-color afternoon"></span> Afternoon (12-18)</span>
+          <span class="legend-item"><span class="legend-color evening"></span> Evening (18-24)</span>
+          <span class="legend-item"><span class="legend-color business"></span> Business Hours</span>
+        </div>
+        <button class="close-timeline" id="close-timeline">Close</button>
+      </div>
+    </div>
+
+    <!-- World Map Panel -->
+    <div class="worldmap-panel" id="worldmap-panel">
+      <div class="worldmap-content">
+        <h3>🗺️ World Map</h3>
+        <div class="worldmap-container" id="worldmap-container">
+          <div class="worldmap-svg">
+            <!-- Simplified interactive world map -->
+            <svg viewBox="0 0 1000 500" id="world-map-svg">
+              <!-- Day/Night Terminator -->
+              <defs>
+                <linearGradient id="dayNight" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:0.7" />
+                  <stop offset="50%" style="stop-color:#1a1a2e;stop-opacity:0" />
+                  <stop offset="100%" style="stop-color:#1a1a2e;stop-opacity:0.7" />
+                </linearGradient>
+              </defs>
+              <!-- Map background -->
+              <rect class="map-bg" x="0" y="0" width="1000" height="500" />
+              <!-- Continents (simplified paths) -->
+              <g class="continents">
+                <!-- North America -->
+                <path class="continent" d="M 50 80 L 250 50 L 300 150 L 280 200 L 200 250 L 100 200 Z" data-region="north-america"/>
+                <!-- South America -->
+                <path class="continent" d="M 200 270 L 280 260 L 300 350 L 270 450 L 200 420 L 180 320 Z" data-region="south-america"/>
+                <!-- Europe -->
+                <path class="continent" d="M 450 80 L 550 60 L 580 120 L 520 160 L 450 140 Z" data-region="europe"/>
+                <!-- Africa -->
+                <path class="continent" d="M 450 180 L 550 170 L 580 280 L 520 400 L 450 380 L 430 260 Z" data-region="africa"/>
+                <!-- Asia -->
+                <path class="continent" d="M 580 50 L 850 60 L 900 200 L 800 280 L 650 220 L 580 120 Z" data-region="asia"/>
+                <!-- Australia -->
+                <path class="continent" d="M 800 320 L 900 300 L 930 380 L 870 430 L 800 400 Z" data-region="oceania"/>
+              </g>
+              <!-- City markers will be added dynamically -->
+              <g class="city-markers" id="city-markers"></g>
+              <!-- Day/Night overlay -->
+              <rect class="day-night-overlay" id="day-night-overlay" x="0" y="0" width="500" height="500" fill="url(#dayNight)"/>
+            </svg>
+          </div>
+          <div class="worldmap-city-list" id="worldmap-city-list"></div>
+        </div>
+        <button class="close-worldmap" id="close-worldmap">Close</button>
+      </div>
+    </div>
+
+    <!-- Profiles Panel -->
+    <div class="profiles-panel" id="profiles-panel">
+      <div class="profiles-content">
+        <h3>👤 Timezone Profiles</h3>
+        <div class="profile-create">
+          <input type="text" id="profile-name" placeholder="Profile name (e.g., Work, Family)">
+          <button class="btn-primary" id="save-profile-btn">💾 Save Current</button>
+        </div>
+        <div class="profile-list" id="profile-list">
+          <div class="profile-item default">
+            <span class="profile-name">Default</span>
+            <span class="profile-count">4 timezones</span>
+            <button class="profile-load active">Active</button>
+          </div>
+        </div>
+        <button class="close-profiles" id="close-profiles">Close</button>
+      </div>
+    </div>
+
+    <!-- Holiday Calendar Panel -->
+    <div class="holidays-panel" id="holidays-panel">
+      <div class="holidays-content">
+        <h3>🎉 Upcoming Holidays</h3>
+        <div class="holidays-tabs">
+          <button class="holidays-tab active" data-region="all">All</button>
+          <button class="holidays-tab" data-region="us">🇺🇸 US</button>
+          <button class="holidays-tab" data-region="brazil">🇧🇷 Brazil</button>
+          <button class="holidays-tab" data-region="italy">🇮🇹 Italy</button>
+          <button class="holidays-tab" data-region="uk">🇬🇧 UK</button>
+        </div>
+        <div class="holidays-list" id="holidays-list">
+          <!-- Holidays will be rendered here -->
+        </div>
+        <button class="close-holidays" id="close-holidays">Close</button>
+      </div>
+    </div>
+
+    <!-- DST Alert Banner -->
+    <div class="dst-alert" id="dst-alert" style="display: none;">
+      <span class="dst-icon">⚠️</span>
+      <span class="dst-message" id="dst-message"></span>
+      <button class="dst-dismiss" id="dst-dismiss">×</button>
+    </div>
+
+    <!-- Target Countdown Panel -->
+    <div class="target-countdown-panel" id="target-countdown-panel">
+      <div class="target-countdown-content">
+        <h3>🎯 Countdown to Time</h3>
+        <p class="panel-subtitle">Set a target time in any timezone</p>
+        <div class="target-countdown-form">
+          <div class="target-input-group">
+            <label>Target Time:</label>
+            <input type="time" id="target-time-input" value="17:00">
+          </div>
+          <div class="target-input-group">
+            <label>Timezone:</label>
+            <select id="target-timezone-select">
+              <option value="local">Local Time</option>
+            </select>
+          </div>
+          <div class="target-input-group">
+            <label>Label (optional):</label>
+            <input type="text" id="target-label-input" placeholder="e.g., Meeting starts">
+          </div>
+          <button class="btn-primary" id="start-target-countdown">Start Countdown</button>
+        </div>
+        <div class="active-countdowns" id="active-countdowns">
+          <!-- Active countdowns will be rendered here -->
+        </div>
+        <button class="close-target-countdown" id="close-target-countdown">Close</button>
+      </div>
+    </div>
+
+    <!-- Sunrise/Sunset Info (added to clock cards dynamically) -->
+
     <!-- Keyboard Shortcuts Help -->
     <div class="shortcuts-help" id="shortcuts-help">
       <div class="shortcuts-content">
@@ -242,10 +584,45 @@
         <div class="shortcut-item"><kbd>1-4</kbd> - Copy timezone 1-4</div>
         <div class="shortcut-item"><kbd>S</kbd> - Settings</div>
         <div class="shortcut-item"><kbd>D</kbd> - Dark mode</div>
-        <div class="shortcut-item"><kbd>C</kbd> - Compact mode</div>
         <div class="shortcut-item"><kbd>?</kbd> - Toggle this help</div>
         <div class="shortcut-item"><kbd>Esc</kbd> - Close</div>
         <button class="close-shortcuts" id="close-shortcuts">Close</button>
+      </div>
+    </div>
+
+    <!-- Welcome Onboarding Modal -->
+    <div class="onboarding-modal" id="onboarding-modal">
+      <div class="onboarding-content">
+        <div class="onboarding-header">
+          <span class="onboarding-logo">🌏</span>
+          <h2>Welcome to World Clock!</h2>
+        </div>
+        <p class="onboarding-subtitle">Track time across the globe in one click</p>
+        
+        <div class="onboarding-features">
+          <div class="onboarding-feature">
+            <span class="feature-icon">⏱️</span>
+            <div>
+              <strong>Timers & Stopwatch</strong>
+              <p>Pomodoro, countdown timers, and lap tracking</p>
+            </div>
+          </div>
+          <div class="onboarding-feature">
+            <span class="feature-icon">🗺️</span>
+            <div>
+              <strong>560+ Timezones</strong>
+              <p>Add any city with the + button</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="onboarding-tip">
+          <kbd>?</kbd> Press anytime for keyboard shortcuts
+        </div>
+        
+        <button class="onboarding-start-btn" id="onboarding-start-btn">
+          Get Started
+        </button>
       </div>
     </div>
   </div>

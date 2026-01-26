@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Clock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-primary: #08090a;
+      --bg-card: #161719;
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.15);
+    }
+    
+    body {
+      font-family: 'Outfit', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      text-align: center;
+    }
+    
+    .hero-time {
+      font-size: clamp(4rem, 15vw, 12rem);
+      font-weight: 300;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      letter-spacing: -0.02em;
+    }
+    
+    .hero-date {
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      margin-bottom: 60px;
+    }
+    
+    .greeting {
+      font-size: 2rem;
+      color: var(--accent);
+      margin-bottom: 60px;
+      font-weight: 500;
+    }
+    
+    .clocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .clock-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.3s ease;
+    }
+    
+    .clock-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+    
+    .clock-flag {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    
+    .clock-name {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    
+    .clock-time {
+      font-size: 1.8rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary);
+    }
+    
+    .clock-diff {
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-top: 8px;
+    }
+    
+    .search-box {
+      margin-top: 60px;
+      position: relative;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 1rem;
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      color: var(--text-primary);
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+    
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+    
+    .footer {
+      margin-top: 60px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+      .hero-time {
+        font-size: 4rem;
+      }
+      
+      .clocks-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero-time" id="hero-time">--:--</div>
+    <div class="hero-date" id="hero-date">Loading...</div>
+    <div class="greeting" id="greeting"></div>
+    
+    <div class="clocks-grid" id="clocks-grid"></div>
+    
+    <div class="search-box">
+      <input type="text" class="search-input" id="search-input" placeholder="Search Google or type a URL" autofocus>
+    </div>
+    
+    <div class="footer">
+      Powered by <a href="#" id="open-extension">World Clock Extension</a>
+    </div>
+  </div>
+
+  <script>
+    const defaultTimezones = [
+      { id: 'est', name: 'New York', timezone: 'America/New_York', flag: '🇺🇸' },
+      { id: 'pst', name: 'Los Angeles', timezone: 'America/Los_Angeles', flag: '🇺🇸' },
+      { id: 'london', name: 'London', timezone: 'Europe/London', flag: '🇬🇧' },
+      { id: 'tokyo', name: 'Tokyo', timezone: 'Asia/Tokyo', flag: '🇯🇵' }
+    ];
+    
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good morning';
+      if (hour < 18) return 'Good afternoon';
+      return 'Good evening';
+    }
+    
+    function formatTimeDiff(tz) {
+      const now = new Date();
+      const localOffset = now.getTimezoneOffset();
+      const tzTime = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+      const localTime = new Date(now.toLocaleString('en-US'));
+      const diffHours = Math.round((tzTime - localTime) / (1000 * 60 * 60));
+      
+      if (diffHours === 0) return 'Same time';
+      if (diffHours > 0) return `+${diffHours}h`;
+      return `${diffHours}h`;
+    }
+    
+    function updateClocks() {
+      const now = new Date();
+      
+      // Hero time
+      document.getElementById('hero-time').textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      // Hero date
+      document.getElementById('hero-date').textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      
+      // Greeting
+      document.getElementById('greeting').textContent = getGreeting();
+      
+      // World clocks
+      const grid = document.getElementById('clocks-grid');
+      grid.innerHTML = '';
+      
+      defaultTimezones.forEach(tz => {
+        const time = now.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: tz.timezone
+        });
+        
+        const card = document.createElement('div');
+        card.className = 'clock-card';
+        card.innerHTML = `
+          <div class="clock-flag">${tz.flag}</div>
+          <div class="clock-name">${tz.name}</div>
+          <div class="clock-time">${time}</div>
+          <div class="clock-diff">${formatTimeDiff(tz.timezone)}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+    
+    // Search functionality
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (query) {
+          // Check if it's a URL
+          if (query.includes('.') && !query.includes(' ')) {
+            const url = query.startsWith('http') ? query : 'https://' + query;
+            window.location.href = url;
+          } else {
+            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+          }
+        }
+      }
+    });
+    
+    // Open extension popup
+    document.getElementById('open-extension').addEventListener('click', (e) => {
+      e.preventDefault();
+      // Can't directly open popup, but can show info
+      alert('Click the World Clock icon in your toolbar to open the full extension.');
+    });
+    
+    // Initial update
+    updateClocks();
+    
+    // Update every second
+    setInterval(updateClocks, 1000);
+  </script>
+</body>
+</html>
+
+
+
+

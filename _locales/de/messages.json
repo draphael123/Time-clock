@@ -1,0 +1,159 @@
+{
+  "extName": {
+    "message": "Weltuhr - EST, PST, Brasilien & Italien",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Schöne Weltuhr mit Stoppuhr, Timer, Pomodoro, Alarme, Weltkarte, Zeitleiste, Profile, Wetter und über 560 Zeitzonen!",
+    "description": "Extension description"
+  },
+  "appTitle": {
+    "message": "Weltuhr",
+    "description": "Application title"
+  },
+  "settings": {
+    "message": "Einstellungen",
+    "description": "Settings button label"
+  },
+  "addTimezone": {
+    "message": "Zeitzone Hinzufügen",
+    "description": "Add timezone button"
+  },
+  "darkMode": {
+    "message": "Dunkelmodus",
+    "description": "Dark mode toggle"
+  },
+  "hour24": {
+    "message": "24-Stunden-Format",
+    "description": "24-hour time format option"
+  },
+  "showSeconds": {
+    "message": "Sekunden anzeigen",
+    "description": "Show seconds option"
+  },
+  "compactMode": {
+    "message": "Kompaktmodus",
+    "description": "Compact view mode"
+  },
+  "stopwatch": {
+    "message": "Stoppuhr",
+    "description": "Stopwatch feature"
+  },
+  "timer": {
+    "message": "Timer",
+    "description": "Timer feature"
+  },
+  "pomodoro": {
+    "message": "Pomodoro",
+    "description": "Pomodoro timer feature"
+  },
+  "alarms": {
+    "message": "Alarme",
+    "description": "Alarms feature"
+  },
+  "timeConverter": {
+    "message": "Zeitumrechner",
+    "description": "Time converter feature"
+  },
+  "worldMap": {
+    "message": "Weltkarte",
+    "description": "World map view"
+  },
+  "timeline": {
+    "message": "Zeitleiste",
+    "description": "Timeline comparison view"
+  },
+  "profiles": {
+    "message": "Profile",
+    "description": "Timezone profiles"
+  },
+  "holidays": {
+    "message": "Feiertage",
+    "description": "Upcoming holidays"
+  },
+  "search": {
+    "message": "Suchen",
+    "description": "Search button/label"
+  },
+  "share": {
+    "message": "Teilen",
+    "description": "Share button"
+  },
+  "refresh": {
+    "message": "Aktualisieren",
+    "description": "Refresh button"
+  },
+  "close": {
+    "message": "Schließen",
+    "description": "Close button"
+  },
+  "save": {
+    "message": "Speichern",
+    "description": "Save button"
+  },
+  "cancel": {
+    "message": "Abbrechen",
+    "description": "Cancel button"
+  },
+  "delete": {
+    "message": "Löschen",
+    "description": "Delete button"
+  },
+  "edit": {
+    "message": "Bearbeiten",
+    "description": "Edit button"
+  },
+  "start": {
+    "message": "Start",
+    "description": "Start button"
+  },
+  "stop": {
+    "message": "Stopp",
+    "description": "Stop button"
+  },
+  "reset": {
+    "message": "Zurücksetzen",
+    "description": "Reset button"
+  },
+  "lap": {
+    "message": "Runde",
+    "description": "Lap button for stopwatch"
+  },
+  "copied": {
+    "message": "Kopiert!",
+    "description": "Copied to clipboard notification"
+  },
+  "businessHours": {
+    "message": "Geschäftszeiten",
+    "description": "Business hours indicator"
+  },
+  "sunrise": {
+    "message": "Sonnenaufgang",
+    "description": "Sunrise time"
+  },
+  "sunset": {
+    "message": "Sonnenuntergang",
+    "description": "Sunset time"
+  },
+  "weather": {
+    "message": "Wetter",
+    "description": "Weather information"
+  },
+  "welcomeTitle": {
+    "message": "Willkommen bei Weltuhr!",
+    "description": "Onboarding title"
+  },
+  "welcomeMessage": {
+    "message": "Ihre datenschutzorientierte, funktionsreiche Weltuhr-Erweiterung.",
+    "description": "Onboarding welcome message"
+  },
+  "getStarted": {
+    "message": "Loslegen",
+    "description": "Get started button"
+  },
+  "keyboardShortcuts": {
+    "message": "Drücken Sie ? für Tastaturkürzel",
+    "description": "Keyboard shortcuts hint"
+  }
+}
+

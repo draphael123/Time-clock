@@ -6,6 +6,10 @@ import LiveChat from './components/LiveChat'
 import SettingsPanel from './components/SettingsPanel'
 import Forum from './components/Forum'
 import ContactForm from './components/ContactForm'
+import InteractiveDemo from './components/InteractiveDemo'
+import TimezoneConverter from './components/TimezoneConverter'
+import MeetingScheduler from './components/MeetingScheduler'
+import EmbeddableWidget from './components/EmbeddableWidget'
 
 export default function Home() {
   const [times, setTimes] = useState({
@@ -25,34 +29,7 @@ export default function Home() {
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showUpdateBanner, setShowUpdateBanner] = useState(false)
-  const [stats] = useState({
-    timezones: 24,
-    users: '1000+',
-    downloads: '5000+',
-    uptime: '99.9%'
-  })
-  const [animatedStats, setAnimatedStats] = useState({
-    timezones: 0
-  })
 
-  useEffect(() => {
-    // Animate statistics counter
-    const animateCounter = () => {
-      let current = 0
-      const target = stats.timezones
-      const increment = target / 50
-      const timer = setInterval(() => {
-        current += increment
-        if (current >= target) {
-          setAnimatedStats({ timezones: target })
-          clearInterval(timer)
-        } else {
-          setAnimatedStats({ timezones: Math.floor(current) })
-        }
-      }, 30)
-    }
-    animateCounter()
-  }, [])
 
   useEffect(() => {
     // Load dark mode preference
@@ -114,7 +91,7 @@ export default function Home() {
       setShowBackToTop(window.scrollY > 300)
       
       // Update active section for navigation
-      const sections = ['features', 'screenshots', 'comparison', 'changelog', 'testimonials', 'use-cases', 'installation', 'faq', 'contact']
+      const sections = ['features', 'screenshots', 'comparison', 'changelog', 'use-cases', 'installation', 'faq', 'contact']
       const current = sections.find(section => {
         const element = document.getElementById(section)
         if (element) {
@@ -182,7 +159,7 @@ export default function Home() {
             <div className="update-banner-icon">🎉</div>
             <div className="update-banner-text">
               <div className="update-banner-title">
-                <strong>Version 2.0.0 Available!</strong>
+                <strong>Version 3.0.0 Available!</strong>
                 <span className="update-badge">NEW</span>
               </div>
               <div className="update-banner-description">
@@ -212,12 +189,12 @@ export default function Home() {
       )}
 
       {/* Sticky Navigation Header */}
-      <nav className="sticky-nav">
-        <div className="nav-container">
-          <div className="nav-logo">
-            <span>🌏</span>
-            <span>World Clock</span>
-          </div>
+      <nav className="nav">
+        <div className="nav-content">
+          <a href="#" className="nav-logo">
+            <div className="nav-logo-icon">⏱</div>
+            <span className="nav-logo-text">World Clock</span>
+          </a>
           <button 
             className="mobile-menu-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -249,28 +226,22 @@ export default function Home() {
         <div className="hero-content">
           <div className="hero-text fade-in-up">
             <div className="hero-badge">
-              <span className="badge-icon">✨</span>
-              <span>560+ Timezones Available</span>
+              <span>560+ timezones supported</span>
             </div>
             <h1 className="hero-title">
-              <span className="title-gradient">Never Miss a Moment</span>
-              <br />
-              <span className="title-accent">Across Time Zones</span>
+              <span className="title-gradient">Track time</span>
+              <span className="title-accent">everywhere.</span>
             </h1>
             <p className="hero-subtitle">
-              The most beautiful, privacy-focused world clock extension for Chrome. Track multiple time zones in real-time, 
-              customize your view, and stay connected with your global team—all completely free and offline.
+              A privacy-focused world clock for Chrome. See multiple time zones at a glance, 
+              work offline, and never miss another call with your global team.
             </p>
             <div className="hero-buttons">
-              <button onClick={handleDownload} className="btn-primary pulse glow-button" aria-label="Download World Clock Extension">
-                <span className="btn-content">
-                  <span className="btn-icon">⬇️</span>
-                  <span>Download Now - It's Free</span>
-                  <span className="btn-shine"></span>
-                </span>
+              <button onClick={handleDownload} className="btn-primary" aria-label="Download World Clock Extension">
+                Download for Chrome
               </button>
-              <Link href="#features" className="btn-secondary hover-lift">
-                <span>Learn More</span>
+              <Link href="#features" className="btn-secondary">
+                <span>Learn more</span>
                 <span className="btn-arrow">→</span>
               </Link>
               <button 
@@ -352,52 +323,57 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="features">
         <div className="container">
-          <h2 className="section-title">Why You'll Love It</h2>
+          <h2 className="section-title">Built for <em>focus</em></h2>
+          <p className="section-subtitle">Everything you need to stay synchronized with your team, nothing you don't.</p>
           <div className="features-grid">
-            <div className="feature-card card-hover-effect">
-              <div className="feature-icon rotating-icon" aria-hidden="true">⚡</div>
-              <h3>Lightning Fast</h3>
-              <p>Updates every second with zero lag. See time changes in real-time as they happen.</p>
-              <div className="card-glow"></div>
+            <div className="feature-card">
+              <div className="feature-icon">→</div>
+              <h3>Real-time updates</h3>
+              <p>Syncs every second. See time changes as they happen with zero lag.</p>
             </div>
-            <div className="feature-card card-hover-effect">
-              <div className="feature-icon pulsing-icon" aria-hidden="true">🎨</div>
-              <h3>Beautiful Design</h3>
-              <p>Modern gradient backgrounds, smooth animations, and an intuitive user interface.</p>
-              <div className="card-glow"></div>
+            <div className="feature-card">
+              <div className="feature-icon">◐</div>
+              <h3>Dark mode</h3>
+              <p>Easy on the eyes. Toggle between light and dark themes instantly.</p>
             </div>
-            <div className="feature-card card-hover-effect">
-              <div className="feature-icon floating-icon" aria-hidden="true">🌍</div>
-              <h3>Multiple Time Zones</h3>
-              <p>Track Eastern Time, Pacific Time, Brazil, and Italy simultaneously. Perfect for global teams and travelers.</p>
-              <div className="card-glow"></div>
+            <div className="feature-card">
+              <div className="feature-icon">⊕</div>
+              <h3>560+ zones</h3>
+              <p>Track any city in the world. Search and add custom timezones.</p>
             </div>
-            <div className="feature-card card-hover-effect">
-              <div className="feature-icon rotating-icon" aria-hidden="true">🔒</div>
-              <h3>Privacy First</h3>
-              <p>100% offline operation. No data collection. No tracking. Your privacy is protected.</p>
-              <div className="card-glow"></div>
+            <div className="feature-card">
+              <div className="feature-icon">◇</div>
+              <h3>Privacy-first</h3>
+              <p>Works completely offline. No data collection, no tracking, ever.</p>
             </div>
-            <div className="feature-card card-hover-effect">
-              <div className="feature-icon pulsing-icon" aria-hidden="true">🚀</div>
-              <h3>Easy Setup</h3>
-              <p>Install in seconds. Download, load the extension, and start tracking time zones immediately.</p>
-              <div className="card-glow"></div>
+            <div className="feature-card">
+              <div className="feature-icon">⌘</div>
+              <h3>Keyboard shortcuts</h3>
+              <p>Power user friendly. Copy times and switch views without clicking.</p>
             </div>
-            <div className="feature-card card-hover-effect">
-              <div className="feature-icon floating-icon" aria-hidden="true">💯</div>
-              <h3>Completely Free</h3>
-              <p>No ads, no subscriptions, no hidden costs. Full functionality available at no charge.</p>
-              <div className="card-glow"></div>
+            <div className="feature-card">
+              <div className="feature-icon">∅</div>
+              <h3>Free forever</h3>
+              <p>No ads, no subscriptions, no catch. Open source and transparent.</p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Interactive Demo */}
+      <InteractiveDemo />
+
+      {/* Timezone Converter */}
+      <TimezoneConverter />
+
+      {/* Meeting Scheduler */}
+      <MeetingScheduler />
+
+
       {/* Screenshot Gallery */}
       <section id="screenshots" className="screenshots">
         <div className="container">
-          <h2 className="section-title">See It In Action</h2>
+          <h2 className="section-title">See it in <em>action</em></h2>
           <div className="screenshot-gallery">
             <div className="screenshot-main">
               <div className="screenshot-card">
@@ -527,7 +503,7 @@ export default function Home() {
       {/* Feature Comparison Table */}
       <section id="comparison" className="comparison">
         <div className="container">
-          <h2 className="section-title">Why Choose Us?</h2>
+          <h2 className="section-title">Why this <em>extension</em></h2>
           <div className="comparison-table-wrapper">
             <table className="comparison-table">
               <thead>
@@ -587,7 +563,7 @@ export default function Home() {
       {/* Version History / Changelog */}
       <section id="changelog" className="changelog">
         <div className="container">
-          <h2 className="section-title">What's New</h2>
+          <h2 className="section-title">What's <em>new</em></h2>
           <div className="changelog-list">
             <div className="changelog-item">
               <div className="changelog-version">v1.0.0</div>
@@ -612,49 +588,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Statistics/Metrics Section */}
-      <section id="stats" className="stats-section">
-        <div className="container">
-          <h2 className="section-title">By The Numbers</h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">🌍</div>
-              <div className="stat-value">{animatedStats.timezones}+</div>
-              <div className="stat-label">Timezones Supported</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">👥</div>
-              <div className="stat-value-text">{stats.users}</div>
-              <div className="stat-label">Active Users</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">⬇️</div>
-              <div className="stat-value-text">{stats.downloads}</div>
-              <div className="stat-label">Downloads</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">⚡</div>
-              <div className="stat-value-text">{stats.uptime}</div>
-              <div className="stat-label">Uptime</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">🔒</div>
-              <div className="stat-value-text">0</div>
-              <div className="stat-label">Data Collected</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">💰</div>
-              <div className="stat-value-text">100%</div>
-              <div className="stat-label">Free Forever</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Use Cases Section */}
       <section id="use-cases" className="use-cases">
         <div className="container">
-          <h2 className="section-title">Perfect For</h2>
+          <h2 className="section-title">Built for <em>you</em></h2>
           <div className="use-cases-grid">
             <div className="use-case-card">
               <div className="use-case-icon">💼</div>
@@ -698,7 +636,7 @@ export default function Home() {
       {/* Visual Installation Guide */}
       <section id="installation" className="installation-guide">
         <div className="container">
-          <h2 className="section-title">Installation Guide</h2>
+          <h2 className="section-title">Install in <em>seconds</em></h2>
           <p className="section-subtitle">Get started in less than 2 minutes</p>
           <div className="installation-steps">
             <div className="installation-step">
@@ -787,7 +725,7 @@ export default function Home() {
       {/* Video Demo Section */}
       <section id="video-demo" className="video-demo">
         <div className="container">
-          <h2 className="section-title">See It In Action</h2>
+          <h2 className="section-title">See it in <em>action</em></h2>
           <div className="video-container">
             <div className="video-placeholder">
               <div className="play-button">▶️</div>
@@ -841,7 +779,7 @@ export default function Home() {
       {/* Performance Metrics */}
       <section className="performance-metrics">
         <div className="container">
-          <h2 className="section-title">Performance & Privacy</h2>
+          <h2 className="section-title">Fast and <em>private</em></h2>
           <div className="metrics-grid">
             <div className="metric-card">
               <div className="metric-value">0ms</div>
@@ -870,7 +808,7 @@ export default function Home() {
       {/* Integration Examples */}
       <section className="integrations">
         <div className="container">
-          <h2 className="section-title">Works Great With</h2>
+          <h2 className="section-title">Pairs well <em>with</em></h2>
           <div className="integrations-grid">
             <div className="integration-card">
               <div className="integration-icon">📅</div>
@@ -899,7 +837,7 @@ export default function Home() {
       {/* Newsletter Signup */}
       <section className="newsletter">
         <div className="container">
-          <h2 className="section-title">Stay Updated</h2>
+          <h2 className="section-title">Stay <em>updated</em></h2>
           <p className="newsletter-subtitle">Get notified about new features and updates</p>
           {!newsletterSubmitted ? (
             <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
@@ -928,7 +866,7 @@ export default function Home() {
       {/* Contact/Support Section */}
       <section id="contact" className="contact-support">
         <div className="container">
-          <h2 className="section-title">Need Help?</h2>
+          <h2 className="section-title">Get <em>help</em></h2>
           
           {/* Contact Form */}
           <div className="contact-form-section">
@@ -973,7 +911,7 @@ export default function Home() {
       {/* Related Tools/Resources */}
       <section className="related-tools">
         <div className="container">
-          <h2 className="section-title">Helpful Resources</h2>
+          <h2 className="section-title">Useful <em>resources</em></h2>
           <div className="tools-grid">
             <div className="tool-card">
               <h3>Timezone Converter</h3>
@@ -1005,59 +943,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="testimonials">
-        <div className="container">
-          <h2 className="section-title">What Users Say</h2>
-          <div className="testimonials-grid">
-            <div className="testimonial-card">
-              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
-              <p className="testimonial-text">"Perfect for my remote team! I can quickly check times across different timezones without opening a new tab."</p>
-              <div className="testimonial-author">- Remote Worker</div>
-            </div>
-            <div className="testimonial-card">
-              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
-              <p className="testimonial-text">"Love the dark mode and the ability to copy times. Makes scheduling meetings so much easier!"</p>
-              <div className="testimonial-author">- Project Manager</div>
-            </div>
-            <div className="testimonial-card">
-              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
-              <p className="testimonial-text">"Finally, a timezone extension that's free, works offline, and doesn't track me. Highly recommend!"</p>
-              <div className="testimonial-author">- Privacy-Conscious User</div>
-            </div>
-            <div className="testimonial-card">
-              <div className="testimonial-stars">⭐⭐⭐⭐⭐</div>
-              <p className="testimonial-text">"The keyboard shortcuts are a game-changer. I can copy times without even touching my mouse!"</p>
-              <div className="testimonial-author">- Power User</div>
-            </div>
-          </div>
-          <div className="testimonials-cta">
-            <button onClick={handleDownload} className="btn-primary">
-              Join Happy Users
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* How It Works */}
       <section className="how-it-works">
         <div className="container">
-          <h2 className="section-title">How It Works</h2>
+          <h2 className="section-title">Three steps to <em>sync</em></h2>
           <div className="steps">
             <div className="step">
               <div className="step-number">1</div>
               <h3>Download</h3>
-              <p>Click the download button to get the latest extension files from GitHub (includes all features: dark mode, copy to clipboard, settings, and more)</p>
+              <p>Get the extension from GitHub. It's open source and completely free.</p>
             </div>
             <div className="step">
               <div className="step-number">2</div>
               <h3>Install</h3>
-              <p>Open Chrome, navigate to chrome://extensions/, enable Developer mode, and load the unpacked extension</p>
+              <p>Load it in Chrome via Developer mode. Takes about 30 seconds.</p>
             </div>
             <div className="step">
               <div className="step-number">3</div>
-              <h3>Start Using</h3>
-              <p>Click the extension icon in your browser toolbar to view all time zones in real-time</p>
+              <h3>Done</h3>
+              <p>Click the icon to see times. That's it—no account needed.</p>
             </div>
           </div>
         </div>
@@ -1066,12 +971,12 @@ export default function Home() {
       {/* CTA Section */}
       <section className="cta">
         <div className="container">
-          <h2>Ready to Stay in Sync?</h2>
-          <p>Join users worldwide who stay connected across time zones</p>
-          <button onClick={handleDownload} className="btn-primary large">
-            Download World Clock Extension
+          <h2>Start tracking time.</h2>
+          <p>Free, private, and built for people who work across borders.</p>
+          <button onClick={handleDownload} className="btn-primary">
+            Download for Chrome
           </button>
-          <p className="cta-note">Free • No Sign-up Required • Instant Access • Always Latest Version</p>
+          <p className="cta-note">Free forever · No account · Works offline</p>
         </div>
       </section>
 
@@ -1082,10 +987,13 @@ export default function Home() {
         </button>
       </div>
 
+      {/* Embeddable Widget */}
+      <EmbeddableWidget />
+
       {/* FAQ Section */}
       <section id="faq" className="faq">
         <div className="container">
-          <h2 className="section-title">Frequently Asked Questions</h2>
+          <h2 className="section-title">Common <em>questions</em></h2>
           <div className="faq-grid">
             <div className="faq-item">
               <h3>Does this extension work offline?</h3>
@@ -1119,42 +1027,48 @@ export default function Home() {
       <footer className="footer">
         <div className="container">
           <div className="footer-content">
-            <div className="footer-section">
-              <h4>World Clock Extension</h4>
-              <p>Track time zones beautifully</p>
+            <div className="footer-brand">
+              <div className="footer-logo">
+                <div className="footer-logo-icon">⏱</div>
+                <span className="footer-logo-text">World Clock</span>
+              </div>
+              <p>A simple, private way to track time across the world. Built by developers, for developers.</p>
             </div>
             <div className="footer-section">
-              <h4>Links</h4>
+              <h4>Product</h4>
+              <a href="#features">Features</a>
+              <a href="#installation">Installation</a>
+              <a href="#faq">FAQ</a>
+            </div>
+            <div className="footer-section">
+              <h4>Resources</h4>
+              <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <Link href="/privacy">Privacy</Link>
+              <a href="#contact">Contact</a>
+            </div>
+            <div className="footer-section">
+              <h4>Legal</h4>
               <Link href="/privacy">Privacy Policy</Link>
-              <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer">
-                GitHub Repository
-              </a>
-              <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer" className="github-badge">
-                <img src="https://img.shields.io/github/stars/draphael123/Time-clock?style=social" alt="GitHub stars" />
-              </a>
-            </div>
-            <div className="footer-section">
-              <h4>Support</h4>
-              <p>Open source and free forever</p>
-              <p>For issues or questions, visit our GitHub repository</p>
+              <a href="https://github.com/draphael123/Time-clock/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 World Clock Extension. Open source software for global teams.</p>
+            <p>© 2025 World Clock Extension. Open source under MIT license.</p>
+            <div className="footer-social">
+              <a href="https://github.com/draphael123/Time-clock" target="_blank" rel="noopener noreferrer" aria-label="GitHub">⌘</a>
+            </div>
           </div>
         </div>
       </footer>
 
       {/* Back to Top Button */}
-      {showBackToTop && (
-        <button 
-          onClick={scrollToTop} 
-          className="back-to-top"
-          aria-label="Back to top"
-        >
-          ↑
-        </button>
-      )}
+      <button 
+        onClick={scrollToTop} 
+        className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
+        aria-label="Back to top"
+      >
+        ↑
+      </button>
 
       {/* Live Chat Widget */}
       <LiveChat />

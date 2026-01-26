@@ -9,7 +9,7 @@ export default function Privacy() {
         <Link href="/" className="back-link">← Back to Home</Link>
         
         <h1>Privacy Policy</h1>
-        <p className="last-updated">Last Updated: January 2025</p>
+        <p className="last-updated">Last Updated: January 2026</p>
 
         <section>
           <h2>Introduction</h2>
@@ -52,29 +52,38 @@ export default function Privacy() {
         <section>
           <h2>Permissions</h2>
           <p>
-            Our extension requires minimal permissions:
+            Our extension requests only the permissions necessary for its features:
           </p>
           <ul>
-            <li><strong>No special permissions required</strong> - The extension works with standard Chrome extension APIs</li>
-            <li>No access to your browsing data</li>
-            <li>No access to your personal files</li>
-            <li>No access to your camera or microphone</li>
+            <li><strong>Storage</strong> - To save your preferences (timezone selections, display settings) locally and sync across devices</li>
+            <li><strong>Notifications</strong> - To alert you when alarms go off</li>
+            <li><strong>Alarms</strong> - To schedule alarm functionality</li>
+            <li><strong>Context Menus</strong> - To provide quick time-copying via right-click menu</li>
+            <li><strong>Active Tab</strong> - Only used to copy time to clipboard when you request it</li>
           </ul>
+          <p>We do NOT access your browsing history, personal files, camera, or microphone.</p>
         </section>
 
         <section>
           <h2>Third-Party Services</h2>
           <p>
-            We do not use any third-party services, analytics tools, or advertising networks. 
-            The extension is completely self-contained and does not integrate with any external APIs.
+            The extension optionally fetches weather data from Open-Meteo, a free, open-source weather API 
+            that does not require authentication and does not track users. You can disable this feature in settings.
+          </p>
+          <p>
+            No analytics, advertising, or tracking services are used.
           </p>
         </section>
 
         <section>
           <h2>Data Storage</h2>
           <p>
-            The extension does not store any data. All time calculations are performed in real-time 
-            and no information is saved to your device or any external location.
+            Your preferences (selected timezones, display settings, profiles) are stored using Chrome's 
+            built-in sync storage, which means they can sync across your signed-in Chrome browsers. 
+            This data never leaves Google's infrastructure and is protected by your Google account security.
+          </p>
+          <p>
+            Device-specific data (like alarm times) is stored locally and does not sync.
           </p>
         </section>
 

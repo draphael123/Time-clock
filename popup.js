@@ -45,7 +45,6 @@ let settings = {
   showOffset: false,
   showDifference: false,
   darkMode: false,
-  compactMode: false,
   showBusinessHours: false,
   showCountdown: false,
   viewMode: 'grid' // 'grid', 'list', 'table'
@@ -730,6 +729,26 @@ function isBusinessHours(timezone) {
   }
 }
 
+// Check if timezone is currently in Daylight Saving Time
+function isDST(timezone) {
+  try {
+    const now = new Date();
+    const jan = new Date(now.getFullYear(), 0, 1);
+    const jul = new Date(now.getFullYear(), 6, 1);
+    
+    const janOffset = new Date(jan.toLocaleString('en-US', { timeZone: timezone })) - new Date(jan.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const julOffset = new Date(jul.toLocaleString('en-US', { timeZone: timezone })) - new Date(jul.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const nowOffset = new Date(now.toLocaleString('en-US', { timeZone: timezone })) - new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+    
+    const standardOffset = Math.min(janOffset, julOffset);
+    const isDST = nowOffset !== standardOffset;
+    
+    return { isDST, standardOffset: standardOffset / 3600000, currentOffset: nowOffset / 3600000 };
+  } catch (error) {
+    return { isDST: false, standardOffset: 0, currentOffset: 0 };
+  }
+}
+
 // Get time until next hour
 function getTimeUntilNextHour(timezone) {
   try {
@@ -906,40 +925,6 @@ function restoreTimezone(timezoneId) {
   }
 }
 
-// Share timezone view
-function shareTimezoneView() {
-  const visibleTimezones = [];
-  
-  Object.values(timezones).forEach(tz => {
-    if (!removedTimezones.includes(tz.cardId)) {
-      const timeDisplay = document.getElementById(tz.elementId);
-      const dateDisplay = document.getElementById(tz.dateId);
-      visibleTimezones.push({
-        name: tz.timezone,
-        time: timeDisplay?.textContent || '',
-        date: dateDisplay?.textContent || ''
-      });
-    }
-  });
-  
-  customTimezones.forEach(tz => {
-    const timeDisplay = document.getElementById(tz.elementId);
-    const dateDisplay = document.getElementById(tz.dateId);
-    visibleTimezones.push({
-      name: tz.name,
-      time: timeDisplay?.textContent || '',
-      date: dateDisplay?.textContent || ''
-    });
-  });
-  
-  const shareText = visibleTimezones.map(tz => 
-    `${tz.name}: ${tz.time} ${tz.date}`
-  ).join('\n');
-  
-  copyToClipboard(shareText);
-  showToast('Timezone view copied!');
-}
-
 // Update time for a specific timezone
 function updateTimezone(tzConfig) {
   try {
@@ -1037,6 +1022,25 @@ function updateTimezone(tzConfig) {
       indicator.className = `day-night-indicator ${isDay ? 'day' : 'night'}`;
     }
     
+    // Update DST indicator
+    const card = document.querySelector(`[data-timezone="${tzConfig.cardId}"]`);
+    if (card) {
+      const dstInfo = isDST(tzConfig.timezone);
+      let dstIndicator = card.querySelector('.dst-indicator');
+      if (dstInfo.isDST) {
+        if (!dstIndicator) {
+          dstIndicator = document.createElement('span');
+          dstIndicator.className = 'dst-indicator';
+          dstIndicator.title = `Daylight Saving Time active`;
+          const tzCode = card.querySelector('.timezone-code');
+          if (tzCode) tzCode.appendChild(dstIndicator);
+        }
+        dstIndicator.textContent = ' ☀️';
+      } else if (dstIndicator) {
+        dstIndicator.remove();
+      }
+    }
+    
     // Update business hours indicator
     const card = document.querySelector(`[data-timezone="${tzConfig.cardId}"]`);
     if (card && settings.showBusinessHours) {
@@ -1088,14 +1092,20 @@ function updateAllClocks() {
   Object.values(timezones).forEach(updateTimezone);
 }
 
-// Load settings from storage
+// Load settings from storage (sync for cross-device, local for device-specific)
 async function loadSettings() {
   try {
-    const result = await chrome.storage.local.get([
+    // Sync storage for settings that should sync across devices
+    const syncResult = await chrome.storage.sync.get([
       'settings', 'customTimezones', 'removedTimezones', 
       'timezoneOrder', 'timezoneGroups', 'timezoneNotes', 
-      'timezoneLabels', 'alarms', 'recentlyRemoved', 'currentGroup'
+      'timezoneLabels'
     ]);
+    // Local storage for device-specific data
+    const localResult = await chrome.storage.local.get([
+      'alarms', 'recentlyRemoved', 'currentGroup'
+    ]);
+    const result = { ...syncResult, ...localResult };
     if (result.settings) {
       settings = { ...settings, ...result.settings };
       // Ensure hour24 defaults to false (12-hour format)
@@ -1143,13 +1153,18 @@ async function loadSettings() {
   }
 }
 
-// Save settings to storage
+// Save settings to storage (sync for cross-device, local for device-specific)
 async function saveSettings() {
   try {
-    await chrome.storage.local.set({ 
+    // Sync storage for settings that should sync across devices
+    await chrome.storage.sync.set({ 
       settings, customTimezones, removedTimezones,
       timezoneOrder, timezoneGroups, timezoneNotes,
-      timezoneLabels, alarms, recentlyRemoved, currentGroup
+      timezoneLabels
+    });
+    // Local storage for device-specific data
+    await chrome.storage.local.set({
+      alarms, recentlyRemoved, currentGroup
     });
     applySettings();
   } catch (error) {
@@ -1310,14 +1325,6 @@ function applySettings() {
     document.documentElement.removeAttribute('data-theme');
   }
   
-  // Apply compact mode
-  const clockGrid = document.getElementById('clock-grid');
-  if (settings.compactMode) {
-    clockGrid.classList.add('compact');
-  } else {
-    clockGrid.classList.remove('compact');
-  }
-  
   // Update checkboxes
   document.getElementById('toggle-24hour').checked = settings.hour24;
   document.getElementById('toggle-seconds').checked = settings.showSeconds;
@@ -1423,98 +1430,6 @@ function convertTime(inputTime, inputTimezone) {
   }
 }
 
-function populateMeetingTimezones() {
-  const container = document.getElementById('meeting-timezones');
-  container.innerHTML = '<h4>Select Timezones:</h4>';
-  
-  const allTimezones = [...Object.values(timezones), ...customTimezones];
-  allTimezones.forEach(tz => {
-    if (removedTimezones.includes(tz.cardId)) return;
-    
-    const label = document.createElement('label');
-    label.className = 'meeting-tz-checkbox';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = tz.cardId;
-    checkbox.id = `meeting-tz-${tz.cardId}`;
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(` ${timezoneLabels[tz.cardId] || tz.name || tz.timezone}`));
-    container.appendChild(label);
-  });
-  
-  document.getElementById('find-meeting-btn').addEventListener('click', () => {
-    const selected = Array.from(container.querySelectorAll('input:checked')).map(cb => cb.value);
-    if (selected.length > 0) {
-      findBestMeetingTimes(selected);
-    } else {
-      showToast('Please select at least one timezone');
-    }
-  });
-}
-
-function findBestMeetingTimes(timezoneIds) {
-  const now = new Date();
-  const suggestions = [];
-  
-  for (let day = 0; day < 7; day++) {
-    const checkDate = new Date(now);
-    checkDate.setDate(checkDate.getDate() + day);
-    
-    for (let hour = 9; hour < 17; hour++) {
-      checkDate.setHours(hour, 0, 0, 0);
-      
-      let allInBusinessHours = true;
-      const times = {};
-      
-      timezoneIds.forEach(tzId => {
-        const tzConfig = timezones[tzId] || customTimezones.find(t => t.cardId === tzId);
-        if (!tzConfig) return;
-        
-        try {
-          const tzTime = new Date(checkDate.toLocaleString('en-US', { timeZone: tzConfig.timezone }));
-          const tzHour = tzTime.getHours();
-          times[tzId] = tzHour;
-          
-          if (tzHour < 9 || tzHour >= 17) {
-            allInBusinessHours = false;
-          }
-        } catch (error) {
-          allInBusinessHours = false;
-        }
-      });
-      
-      if (allInBusinessHours) {
-        suggestions.push({
-          date: new Date(checkDate),
-          times,
-          score: timezoneIds.length
-        });
-      }
-    }
-  }
-  
-  displayMeetingResults(suggestions.sort((a, b) => b.score - a.score).slice(0, 5));
-}
-
-function displayMeetingResults(suggestions) {
-  const container = document.getElementById('meeting-results');
-  container.innerHTML = '<h4>Best Meeting Times:</h4>';
-  
-  if (suggestions.length === 0) {
-    container.innerHTML += '<p>No suitable times found in the next 7 days.</p>';
-    return;
-  }
-  
-  suggestions.forEach((suggestion, index) => {
-    const div = document.createElement('div');
-    div.className = 'meeting-suggestion';
-    const dateStr = suggestion.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    const timeStr = suggestion.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: !settings.hour24 });
-    div.innerHTML = `<strong>${index + 1}. ${dateStr} at ${timeStr}</strong>`;
-    container.appendChild(div);
-  });
-}
-
 function displayQuickSearchResult(result) {
   const container = document.getElementById('quick-search-results');
   if (result) {
@@ -1537,6 +1452,7 @@ function setupContextMenu() {
   let contextMenu = document.getElementById('context-menu');
   let contextCard = null;
   
+  // Right-click context menu
   document.addEventListener('contextmenu', (e) => {
     const card = e.target.closest('.clock-card');
     if (card) {
@@ -1545,6 +1461,27 @@ function setupContextMenu() {
       contextMenu.style.display = 'block';
       contextMenu.style.left = e.pageX + 'px';
       contextMenu.style.top = e.pageY + 'px';
+    }
+  });
+  
+  // Left-click to copy time (one-click copy)
+  document.getElementById('clock-grid').addEventListener('click', (e) => {
+    const card = e.target.closest('.clock-card');
+    // Don't copy if clicking on remove button or other interactive elements
+    if (card && !e.target.closest('.remove-timezone') && !e.target.closest('button')) {
+      const tzId = card.dataset.timezone;
+      const tzConfig = timezones[tzId] || customTimezones.find(t => t.cardId === tzId);
+      if (tzConfig) {
+        const timeDisplay = document.getElementById(tzConfig.elementId);
+        const dateDisplay = document.getElementById(tzConfig.dateId);
+        const name = timezoneLabels[tzId] || tzConfig.name || tzId;
+        const copyText = `${name}: ${timeDisplay.textContent} - ${dateDisplay.textContent}`;
+        copyToClipboard(copyText);
+        
+        // Visual feedback - add a brief highlight
+        card.classList.add('copied');
+        setTimeout(() => card.classList.remove('copied'), 300);
+      }
     }
   });
   
@@ -1626,6 +1563,49 @@ function applyViewMode() {
 
 // Initialize event listeners
 function initEventListeners() {
+  // More menu toggle
+  const moreMenuBtn = document.getElementById('more-menu-btn');
+  const moreMenu = document.getElementById('more-menu');
+  
+  if (moreMenuBtn && moreMenu) {
+    moreMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      moreMenu.classList.toggle('active');
+      moreMenuBtn.setAttribute('aria-expanded', moreMenu.classList.contains('active'));
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!moreMenu.contains(e.target) && e.target !== moreMenuBtn) {
+        moreMenu.classList.remove('active');
+        moreMenuBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+    
+    // Close menu when clicking a menu item
+    moreMenu.querySelectorAll('.more-menu-item').forEach(item => {
+      item.addEventListener('click', () => {
+        moreMenu.classList.remove('active');
+        moreMenuBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+  
+  // Hide keyboard hint after first interaction or after 10 seconds
+  const keyboardHint = document.getElementById('keyboard-hint');
+  if (keyboardHint) {
+    // Hide after 10 seconds
+    setTimeout(() => {
+      keyboardHint.classList.add('hidden');
+      localStorage.setItem('keyboardHintSeen', 'true');
+    }, 10000);
+    
+    // Or hide on any click if already seen before
+    if (localStorage.getItem('keyboardHintSeen')) {
+      keyboardHint.classList.add('hidden');
+    }
+  }
+  
   // Refresh button
   document.getElementById('refresh-btn').addEventListener('click', () => {
     showLoading();
@@ -1652,12 +1632,6 @@ function initEventListeners() {
   // Dark mode toggle
   document.getElementById('dark-mode-btn').addEventListener('click', () => {
     settings.darkMode = !settings.darkMode;
-    saveSettings();
-  });
-  
-  // Compact mode toggle
-  document.getElementById('compact-mode-btn').addEventListener('click', () => {
-    settings.compactMode = !settings.compactMode;
     saveSettings();
   });
   
@@ -1726,15 +1700,6 @@ function initEventListeners() {
     }
   });
   
-  // Meeting finder
-  document.getElementById('meeting-btn').addEventListener('click', () => {
-    document.getElementById('meeting-panel').classList.add('active');
-    populateMeetingTimezones();
-  });
-  document.getElementById('close-meeting').addEventListener('click', () => {
-    document.getElementById('meeting-panel').classList.remove('active');
-  });
-  
   // Quick search
   document.getElementById('search-btn').addEventListener('click', () => {
     document.getElementById('quick-search-panel').classList.add('active');
@@ -1752,9 +1717,6 @@ function initEventListeners() {
       document.getElementById('quick-search-results').innerHTML = '';
     }
   });
-  
-  // Share
-  document.getElementById('share-btn').addEventListener('click', shareTimezoneView);
   
   // Context menu
   setupContextMenu();
@@ -1821,13 +1783,6 @@ function initEventListeners() {
         if (!e.ctrlKey && !e.metaKey) {
           e.preventDefault();
           settings.darkMode = !settings.darkMode;
-          saveSettings();
-        }
-        break;
-      case 'c':
-        if (!e.ctrlKey && !e.metaKey) {
-          e.preventDefault();
-          settings.compactMode = !settings.compactMode;
           saveSettings();
         }
         break;
@@ -1906,11 +1861,43 @@ function initEventListeners() {
   
   // Timezone search
   const searchInput = document.getElementById('timezone-search-input');
+  let currentSearchResults = [];
+  let selectedResultIndex = -1;
+  
   searchInput.addEventListener('input', (e) => {
     const query = e.target.value.trim();
-    const results = searchTimezones(query);
-    displayTimezoneResults(results);
+    currentSearchResults = searchTimezones(query);
+    selectedResultIndex = currentSearchResults.length > 0 ? 0 : -1;
+    displayTimezoneResults(currentSearchResults);
   });
+  
+  // Enter key to quick-add first/selected result
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && currentSearchResults.length > 0) {
+      e.preventDefault();
+      const indexToAdd = selectedResultIndex >= 0 ? selectedResultIndex : 0;
+      addCustomTimezone(currentSearchResults[indexToAdd]);
+      document.getElementById('timezone-panel').classList.remove('active');
+      searchInput.value = '';
+      currentSearchResults = [];
+      selectedResultIndex = -1;
+    } else if (e.key === 'ArrowDown' && currentSearchResults.length > 0) {
+      e.preventDefault();
+      selectedResultIndex = Math.min(selectedResultIndex + 1, currentSearchResults.length - 1);
+      highlightSelectedResult();
+    } else if (e.key === 'ArrowUp' && currentSearchResults.length > 0) {
+      e.preventDefault();
+      selectedResultIndex = Math.max(selectedResultIndex - 1, 0);
+      highlightSelectedResult();
+    }
+  });
+  
+  function highlightSelectedResult() {
+    const items = document.querySelectorAll('.timezone-result-item');
+    items.forEach((item, index) => {
+      item.classList.toggle('selected', index === selectedResultIndex);
+    });
+  }
   
   // Display timezone search results
   function displayTimezoneResults(results) {
@@ -2028,9 +2015,1862 @@ async function init() {
   }
 }
 
+// ==================== STOPWATCH ====================
+let stopwatchState = {
+  running: false,
+  startTime: 0,
+  elapsed: 0,
+  interval: null,
+  laps: []
+};
+
+function formatStopwatchTime(ms) {
+  const hours = Math.floor(ms / 3600000);
+  const minutes = Math.floor((ms % 3600000) / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  const centiseconds = Math.floor((ms % 1000) / 10);
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+}
+
+function updateStopwatchDisplay() {
+  const display = document.getElementById('stopwatch-display');
+  if (display) {
+    const currentElapsed = stopwatchState.running 
+      ? stopwatchState.elapsed + (Date.now() - stopwatchState.startTime)
+      : stopwatchState.elapsed;
+    display.textContent = formatStopwatchTime(currentElapsed);
+  }
+}
+
+function startStopwatch() {
+  if (!stopwatchState.running) {
+    stopwatchState.running = true;
+    stopwatchState.startTime = Date.now();
+    stopwatchState.interval = setInterval(updateStopwatchDisplay, 10);
+    document.getElementById('stopwatch-start').disabled = true;
+    document.getElementById('stopwatch-stop').disabled = false;
+    document.getElementById('stopwatch-lap').disabled = false;
+  }
+}
+
+function stopStopwatch() {
+  if (stopwatchState.running) {
+    stopwatchState.running = false;
+    stopwatchState.elapsed += Date.now() - stopwatchState.startTime;
+    clearInterval(stopwatchState.interval);
+    document.getElementById('stopwatch-start').disabled = false;
+    document.getElementById('stopwatch-stop').disabled = true;
+    document.getElementById('stopwatch-start').textContent = '▶ Resume';
+  }
+}
+
+function resetStopwatch() {
+  stopwatchState.running = false;
+  stopwatchState.elapsed = 0;
+  stopwatchState.laps = [];
+  clearInterval(stopwatchState.interval);
+  document.getElementById('stopwatch-display').textContent = '00:00:00.00';
+  document.getElementById('lap-times').innerHTML = '';
+  document.getElementById('stopwatch-start').disabled = false;
+  document.getElementById('stopwatch-start').textContent = '▶ Start';
+  document.getElementById('stopwatch-stop').disabled = true;
+  document.getElementById('stopwatch-lap').disabled = true;
+}
+
+function addLap() {
+  const currentElapsed = stopwatchState.elapsed + (Date.now() - stopwatchState.startTime);
+  const lapNumber = stopwatchState.laps.length + 1;
+  const lastLapTime = stopwatchState.laps.length > 0 
+    ? stopwatchState.laps[stopwatchState.laps.length - 1].total 
+    : 0;
+  const lapTime = currentElapsed - lastLapTime;
+  
+  stopwatchState.laps.push({ lap: lapNumber, time: lapTime, total: currentElapsed });
+  
+  const lapTimesContainer = document.getElementById('lap-times');
+  const lapDiv = document.createElement('div');
+  lapDiv.className = 'lap-time';
+  lapDiv.innerHTML = `
+    <span class="lap-number">Lap ${lapNumber}</span>
+    <span class="lap-split">${formatStopwatchTime(lapTime)}</span>
+    <span class="lap-total">${formatStopwatchTime(currentElapsed)}</span>
+  `;
+  lapTimesContainer.insertBefore(lapDiv, lapTimesContainer.firstChild);
+}
+
+// ==================== TIMER ====================
+let timerState = {
+  running: false,
+  totalSeconds: 300,
+  remainingSeconds: 300,
+  interval: null
+};
+
+function formatTimerTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function updateTimerDisplay() {
+  const display = document.getElementById('timer-display');
+  const progress = document.getElementById('timer-progress');
+  if (display) {
+    display.textContent = formatTimerTime(timerState.remainingSeconds);
+  }
+  if (progress) {
+    const percent = (timerState.remainingSeconds / timerState.totalSeconds) * 100;
+    progress.style.width = `${percent}%`;
+  }
+}
+
+function setTimerFromInputs() {
+  const hours = parseInt(document.getElementById('timer-hours').value) || 0;
+  const minutes = parseInt(document.getElementById('timer-minutes').value) || 0;
+  const seconds = parseInt(document.getElementById('timer-seconds').value) || 0;
+  timerState.totalSeconds = hours * 3600 + minutes * 60 + seconds;
+  timerState.remainingSeconds = timerState.totalSeconds;
+  updateTimerDisplay();
+}
+
+function startTimer() {
+  if (!timerState.running && timerState.remainingSeconds > 0) {
+    timerState.running = true;
+    timerState.interval = setInterval(() => {
+      timerState.remainingSeconds--;
+      updateTimerDisplay();
+      if (timerState.remainingSeconds <= 0) {
+        timerComplete();
+      }
+    }, 1000);
+    document.getElementById('timer-start').disabled = true;
+    document.getElementById('timer-pause').disabled = false;
+  }
+}
+
+function pauseTimer() {
+  if (timerState.running) {
+    timerState.running = false;
+    clearInterval(timerState.interval);
+    document.getElementById('timer-start').disabled = false;
+    document.getElementById('timer-start').textContent = '▶ Resume';
+    document.getElementById('timer-pause').disabled = true;
+  }
+}
+
+function resetTimer() {
+  timerState.running = false;
+  clearInterval(timerState.interval);
+  setTimerFromInputs();
+  document.getElementById('timer-start').disabled = false;
+  document.getElementById('timer-start').textContent = '▶ Start';
+  document.getElementById('timer-pause').disabled = true;
+}
+
+function timerComplete() {
+  timerState.running = false;
+  clearInterval(timerState.interval);
+  playSound('timer');
+  showToast('⏰ Timer Complete!');
+  
+  // Show notification if permission granted
+  if (Notification.permission === 'granted') {
+    new Notification('Timer Complete!', {
+      body: 'Your timer has finished.',
+      icon: 'icons/icon128.png'
+    });
+  }
+  
+  document.getElementById('timer-start').disabled = false;
+  document.getElementById('timer-start').textContent = '▶ Start';
+  document.getElementById('timer-pause').disabled = true;
+}
+
+// ==================== POMODORO ====================
+let pomodoroState = {
+  running: false,
+  isBreak: false,
+  isLongBreak: false,
+  sessionsCompleted: 0,
+  totalFocusTime: 0,
+  workDuration: 25 * 60,
+  breakDuration: 5 * 60,
+  longBreakDuration: 15 * 60,
+  remainingSeconds: 25 * 60,
+  interval: null
+};
+
+function updatePomodoroDisplay() {
+  const display = document.getElementById('pomodoro-display');
+  const status = document.getElementById('pomodoro-status');
+  const ring = document.getElementById('pomodoro-ring');
+  
+  if (display) {
+    const minutes = Math.floor(pomodoroState.remainingSeconds / 60);
+    const seconds = pomodoroState.remainingSeconds % 60;
+    display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  
+  if (status) {
+    if (pomodoroState.isLongBreak) {
+      status.textContent = 'Long Break';
+      status.className = 'pomodoro-status break';
+    } else if (pomodoroState.isBreak) {
+      status.textContent = 'Short Break';
+      status.className = 'pomodoro-status break';
+    } else {
+      status.textContent = 'Focus Time';
+      status.className = 'pomodoro-status';
+    }
+  }
+  
+  if (ring) {
+    const totalDuration = pomodoroState.isLongBreak 
+      ? pomodoroState.longBreakDuration 
+      : pomodoroState.isBreak 
+        ? pomodoroState.breakDuration 
+        : pomodoroState.workDuration;
+    const progress = pomodoroState.remainingSeconds / totalDuration;
+    const circumference = 2 * Math.PI * 90;
+    ring.style.strokeDashoffset = circumference * (1 - progress);
+  }
+  
+  document.getElementById('pomodoro-sessions').textContent = pomodoroState.sessionsCompleted;
+  document.getElementById('pomodoro-total-time').textContent = `${Math.floor(pomodoroState.totalFocusTime / 60)}m`;
+}
+
+function startPomodoro() {
+  if (!pomodoroState.running) {
+    pomodoroState.running = true;
+    pomodoroState.interval = setInterval(() => {
+      pomodoroState.remainingSeconds--;
+      if (!pomodoroState.isBreak && !pomodoroState.isLongBreak) {
+        pomodoroState.totalFocusTime++;
+      }
+      updatePomodoroDisplay();
+      if (pomodoroState.remainingSeconds <= 0) {
+        pomodoroComplete();
+      }
+    }, 1000);
+    document.getElementById('pomodoro-start').disabled = true;
+    document.getElementById('pomodoro-pause').disabled = false;
+  }
+}
+
+function pausePomodoro() {
+  if (pomodoroState.running) {
+    pomodoroState.running = false;
+    clearInterval(pomodoroState.interval);
+    document.getElementById('pomodoro-start').disabled = false;
+    document.getElementById('pomodoro-start').textContent = '▶ Resume';
+    document.getElementById('pomodoro-pause').disabled = true;
+  }
+}
+
+function resetPomodoro() {
+  pomodoroState.running = false;
+  pomodoroState.isBreak = false;
+  pomodoroState.isLongBreak = false;
+  clearInterval(pomodoroState.interval);
+  pomodoroState.workDuration = parseInt(document.getElementById('pomodoro-work').value) * 60;
+  pomodoroState.breakDuration = parseInt(document.getElementById('pomodoro-break').value) * 60;
+  pomodoroState.longBreakDuration = parseInt(document.getElementById('pomodoro-long-break').value) * 60;
+  pomodoroState.remainingSeconds = pomodoroState.workDuration;
+  updatePomodoroDisplay();
+  document.getElementById('pomodoro-start').disabled = false;
+  document.getElementById('pomodoro-start').textContent = '▶ Start';
+  document.getElementById('pomodoro-pause').disabled = true;
+}
+
+function skipPomodoro() {
+  pomodoroComplete();
+}
+
+function pomodoroComplete() {
+  pomodoroState.running = false;
+  clearInterval(pomodoroState.interval);
+  playSound('pomodoro');
+  
+  if (!pomodoroState.isBreak && !pomodoroState.isLongBreak) {
+    pomodoroState.sessionsCompleted++;
+    showToast('🎉 Focus session complete! Take a break.');
+    
+    if (pomodoroState.sessionsCompleted % 4 === 0) {
+      pomodoroState.isLongBreak = true;
+      pomodoroState.remainingSeconds = pomodoroState.longBreakDuration;
+    } else {
+      pomodoroState.isBreak = true;
+      pomodoroState.remainingSeconds = pomodoroState.breakDuration;
+    }
+  } else {
+    showToast('💪 Break over! Ready to focus?');
+    pomodoroState.isBreak = false;
+    pomodoroState.isLongBreak = false;
+    pomodoroState.remainingSeconds = pomodoroState.workDuration;
+  }
+  
+  updatePomodoroDisplay();
+  document.getElementById('pomodoro-start').disabled = false;
+  document.getElementById('pomodoro-start').textContent = '▶ Start';
+  document.getElementById('pomodoro-pause').disabled = true;
+  
+  if (Notification.permission === 'granted') {
+    new Notification(pomodoroState.isBreak || pomodoroState.isLongBreak ? 'Time for a break!' : 'Focus session complete!', {
+      body: pomodoroState.isBreak || pomodoroState.isLongBreak ? 'You earned a rest.' : 'Great work! Take a break.',
+      icon: 'icons/icon128.png'
+    });
+  }
+}
+
+// ==================== SOUND FUNCTIONS ====================
+function playSound(type) {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  switch(type) {
+    case 'timer':
+    case 'alarm':
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 500);
+      break;
+    case 'pomodoro':
+      oscillator.frequency.value = 600;
+      oscillator.type = 'triangle';
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 300);
+      break;
+    case 'chime':
+      oscillator.frequency.value = 523.25; // C5
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+      oscillator.start();
+      setTimeout(() => oscillator.stop(), 1000);
+      break;
+  }
+}
+
+// ==================== ALARMS ====================
+let alarmList = [];
+
+function loadAlarms() {
+  chrome.storage.local.get(['alarms'], (result) => {
+    if (result.alarms) {
+      alarmList = result.alarms;
+      renderAlarmList();
+    }
+  });
+}
+
+function saveAlarms() {
+  chrome.storage.local.set({ alarms: alarmList });
+  renderAlarmList();
+}
+
+function addAlarm() {
+  const time = document.getElementById('alarm-time').value;
+  const timezone = document.getElementById('alarm-timezone').value;
+  const label = document.getElementById('alarm-label').value || 'Alarm';
+  const repeat = document.getElementById('alarm-repeat-check').checked;
+  const sound = document.getElementById('alarm-sound').value;
+  
+  const days = [];
+  if (repeat) {
+    document.querySelectorAll('#alarm-days input:checked').forEach(cb => {
+      days.push(parseInt(cb.value));
+    });
+  }
+  
+  if (!time) {
+    showToast('Please set a time');
+    return;
+  }
+  
+  const alarm = {
+    id: Date.now(),
+    time,
+    timezone,
+    label,
+    repeat,
+    days,
+    sound,
+    enabled: true
+  };
+  
+  alarmList.push(alarm);
+  saveAlarms();
+  showToast('Alarm added!');
+  
+  // Clear form
+  document.getElementById('alarm-time').value = '';
+  document.getElementById('alarm-label').value = '';
+  document.getElementById('alarm-repeat-check').checked = false;
+}
+
+function deleteAlarm(id) {
+  alarmList = alarmList.filter(a => a.id !== id);
+  saveAlarms();
+  showToast('Alarm deleted');
+}
+
+function toggleAlarm(id) {
+  const alarm = alarmList.find(a => a.id === id);
+  if (alarm) {
+    alarm.enabled = !alarm.enabled;
+    saveAlarms();
+  }
+}
+
+function renderAlarmList() {
+  const container = document.getElementById('alarm-list');
+  if (!container) return;
+  
+  if (alarmList.length === 0) {
+    container.innerHTML = '<p class="no-alarms">No alarms set</p>';
+    return;
+  }
+  
+  container.innerHTML = alarmList.map(alarm => `
+    <div class="alarm-item ${alarm.enabled ? '' : 'disabled'}">
+      <div class="alarm-info">
+        <div class="alarm-time-display">${alarm.time}</div>
+        <div class="alarm-label-display">${alarm.label} ${alarm.repeat ? '🔁' : ''}</div>
+      </div>
+      <div class="alarm-actions">
+        <button class="alarm-toggle ${alarm.enabled ? 'active' : ''}" data-id="${alarm.id}"></button>
+        <button class="alarm-delete" data-id="${alarm.id}">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+  
+  // Add event listeners
+  container.querySelectorAll('.alarm-toggle').forEach(btn => {
+    btn.addEventListener('click', () => toggleAlarm(parseInt(btn.dataset.id)));
+  });
+  container.querySelectorAll('.alarm-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteAlarm(parseInt(btn.dataset.id)));
+  });
+}
+
+function checkAlarms() {
+  const now = new Date();
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const currentDay = now.getDay();
+  
+  alarmList.forEach(alarm => {
+    if (!alarm.enabled) return;
+    if (alarm.time !== currentTime) return;
+    if (alarm.repeat && alarm.days.length > 0 && !alarm.days.includes(currentDay)) return;
+    
+    // Trigger alarm
+    playSound('alarm');
+    showToast(`⏰ ${alarm.label}`);
+    
+    if (Notification.permission === 'granted') {
+      new Notification(`⏰ ${alarm.label}`, {
+        body: `It's ${alarm.time}`,
+        icon: 'icons/icon128.png',
+        requireInteraction: true
+      });
+    }
+    
+    // Disable non-repeating alarms
+    if (!alarm.repeat) {
+      alarm.enabled = false;
+      saveAlarms();
+    }
+  });
+}
+
+// ==================== TIMELINE VIEW ====================
+let timelineOffset = 0;
+
+function renderTimeline() {
+  const container = document.getElementById('timeline-container');
+  const hoursDiv = container.querySelector('.timeline-hours');
+  
+  // Remove existing rows
+  container.querySelectorAll('.timeline-row').forEach(r => r.remove());
+  
+  const now = new Date();
+  now.setHours(now.getHours() + timelineOffset);
+  
+  document.getElementById('timeline-current').textContent = 
+    timelineOffset === 0 ? 'Now' : `${timelineOffset > 0 ? '+' : ''}${timelineOffset}h`;
+  
+  const allTimezones = [...Object.values(timezones), ...customTimezones];
+  
+  allTimezones.forEach(tz => {
+    if (removedTimezones.includes(tz.cardId)) return;
+    
+    try {
+      const tzTime = new Date(now.toLocaleString('en-US', { timeZone: tz.timezone }));
+      const hour = tzTime.getHours();
+      const hourPercent = (hour / 24) * 100;
+      const businessStart = (9 / 24) * 100;
+      const businessEnd = (17 / 24) * 100;
+      
+      const row = document.createElement('div');
+      row.className = 'timeline-row';
+      row.innerHTML = `
+        <div class="timeline-label">
+          <span>${tz.name || tz.timezone.split('/').pop()}</span>
+        </div>
+        <div class="timeline-bar">
+          <div class="timeline-business" style="left: ${businessStart}%; width: ${businessEnd - businessStart}%"></div>
+          <div class="timeline-marker" style="left: ${hourPercent}%"></div>
+        </div>
+      `;
+      
+      container.appendChild(row);
+    } catch (e) {
+      console.error('Error rendering timeline for', tz.timezone, e);
+    }
+  });
+}
+
+// ==================== WORLD MAP ====================
+const cityCoordinates = {
+  'America/New_York': { x: 280, y: 180, name: 'New York' },
+  'America/Los_Angeles': { x: 120, y: 180, name: 'Los Angeles' },
+  'America/Chicago': { x: 220, y: 170, name: 'Chicago' },
+  'Europe/London': { x: 480, y: 130, name: 'London' },
+  'Europe/Paris': { x: 495, y: 140, name: 'Paris' },
+  'Europe/Berlin': { x: 510, y: 130, name: 'Berlin' },
+  'Europe/Rome': { x: 510, y: 155, name: 'Rome' },
+  'Asia/Tokyo': { x: 870, y: 160, name: 'Tokyo' },
+  'Asia/Shanghai': { x: 800, y: 175, name: 'Shanghai' },
+  'Asia/Dubai': { x: 600, y: 200, name: 'Dubai' },
+  'Asia/Singapore': { x: 780, y: 270, name: 'Singapore' },
+  'Asia/Kolkata': { x: 680, y: 210, name: 'Mumbai' },
+  'Australia/Sydney': { x: 890, y: 380, name: 'Sydney' },
+  'America/Sao_Paulo': { x: 310, y: 350, name: 'São Paulo' },
+  'Africa/Johannesburg': { x: 540, y: 380, name: 'Johannesburg' },
+  'Africa/Cairo': { x: 545, y: 185, name: 'Cairo' }
+};
+
+function renderWorldMap() {
+  const markersGroup = document.getElementById('city-markers');
+  const cityList = document.getElementById('worldmap-city-list');
+  if (!markersGroup || !cityList) return;
+  
+  markersGroup.innerHTML = '';
+  cityList.innerHTML = '';
+  
+  const now = new Date();
+  
+  // Update day/night overlay
+  const overlay = document.getElementById('day-night-overlay');
+  if (overlay) {
+    const utcHour = now.getUTCHours();
+    const nightPosition = ((12 - utcHour) / 24 * 1000 + 500) % 1000;
+    overlay.setAttribute('x', nightPosition - 500);
+  }
+  
+  // Add city markers
+  Object.entries(cityCoordinates).forEach(([tz, coords]) => {
+    try {
+      const tzTime = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+      const hour = tzTime.getHours();
+      const isNight = hour < 6 || hour >= 20;
+      
+      const timeStr = tzTime.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: !settings.hour24
+      });
+      
+      // Add SVG marker
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      marker.classList.add('city-marker');
+      if (isNight) marker.classList.add('night');
+      marker.innerHTML = `
+        <circle cx="${coords.x}" cy="${coords.y}" r="5"/>
+        <text x="${coords.x}" y="${coords.y - 10}">${coords.name}</text>
+      `;
+      marker.addEventListener('click', () => {
+        const tzConfig = popularTimezones.find(t => t.timezone === tz);
+        if (tzConfig) {
+          addCustomTimezone(tzConfig);
+          document.getElementById('worldmap-panel').classList.remove('active');
+        }
+      });
+      markersGroup.appendChild(marker);
+      
+      // Add to city list
+      const cityItem = document.createElement('div');
+      cityItem.className = 'worldmap-city-item';
+      cityItem.innerHTML = `
+        <div class="city-name">${coords.name}</div>
+        <div class="city-time">${timeStr}</div>
+      `;
+      cityItem.addEventListener('click', () => {
+        const tzConfig = popularTimezones.find(t => t.timezone === tz);
+        if (tzConfig) {
+          addCustomTimezone(tzConfig);
+          document.getElementById('worldmap-panel').classList.remove('active');
+        }
+      });
+      cityList.appendChild(cityItem);
+    } catch (e) {
+      console.error('Error rendering city', tz, e);
+    }
+  });
+}
+
+// ==================== PROFILES ====================
+let profiles = {
+  default: {
+    name: 'Default',
+    timezones: ['est', 'pst', 'brazil', 'italy'],
+    customTimezones: []
+  }
+};
+let currentProfileId = 'default';
+
+function loadProfiles() {
+  chrome.storage.sync.get(['profiles', 'currentProfileId'], (result) => {
+    if (result.profiles) profiles = result.profiles;
+    if (result.currentProfileId) currentProfileId = result.currentProfileId;
+    renderProfileList();
+  });
+}
+
+function saveProfiles() {
+  chrome.storage.sync.set({ profiles, currentProfileId });
+  renderProfileList();
+}
+
+function createProfile() {
+  const name = document.getElementById('profile-name').value.trim();
+  if (!name) {
+    showToast('Please enter a profile name');
+    return;
+  }
+  
+  const id = `profile-${Date.now()}`;
+  const currentTimezones = Object.keys(timezones).filter(tz => !removedTimezones.includes(tz));
+  
+  profiles[id] = {
+    name,
+    timezones: currentTimezones,
+    customTimezones: [...customTimezones]
+  };
+  
+  saveProfiles();
+  document.getElementById('profile-name').value = '';
+  showToast(`Profile "${name}" saved!`);
+}
+
+function loadProfile(id) {
+  const profile = profiles[id];
+  if (!profile) return;
+  
+  // Reset current state
+  removedTimezones = Object.keys(timezones).filter(tz => !profile.timezones.includes(tz));
+  customTimezones = [...(profile.customTimezones || [])];
+  currentProfileId = id;
+  
+  // Update display
+  Object.keys(timezones).forEach(tz => {
+    const card = document.querySelector(`[data-timezone="${tz}"]`);
+    if (card) {
+      card.style.display = removedTimezones.includes(tz) ? 'none' : '';
+    }
+  });
+  
+  // Clear and re-render custom timezones
+  document.querySelectorAll('.clock-card.custom').forEach(card => card.remove());
+  customTimezones.forEach(tz => renderCustomTimezone(tz));
+  
+  saveSettings();
+  saveProfiles();
+  showToast(`Loaded profile: ${profile.name}`);
+}
+
+function deleteProfile(id) {
+  if (id === 'default') {
+    showToast('Cannot delete default profile');
+    return;
+  }
+  
+  delete profiles[id];
+  if (currentProfileId === id) {
+    currentProfileId = 'default';
+    loadProfile('default');
+  }
+  saveProfiles();
+  showToast('Profile deleted');
+}
+
+function renderProfileList() {
+  const container = document.getElementById('profile-list');
+  if (!container) return;
+  
+  container.innerHTML = Object.entries(profiles).map(([id, profile]) => `
+    <div class="profile-item ${id === currentProfileId ? 'active' : ''}">
+      <div>
+        <span class="profile-name">${profile.name}</span>
+        <span class="profile-count">${profile.timezones.length + (profile.customTimezones?.length || 0)} timezones</span>
+      </div>
+      <div class="profile-actions">
+        <button class="profile-load ${id === currentProfileId ? 'active' : ''}" data-id="${id}">
+          ${id === currentProfileId ? 'Active' : 'Load'}
+        </button>
+        ${id !== 'default' ? `<button class="profile-delete" data-id="${id}">🗑️</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+  
+  container.querySelectorAll('.profile-load').forEach(btn => {
+    btn.addEventListener('click', () => loadProfile(btn.dataset.id));
+  });
+  container.querySelectorAll('.profile-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteProfile(btn.dataset.id));
+  });
+}
+
+// ==================== DST ALERTS ====================
+function checkDSTChanges() {
+  const now = new Date();
+  const checkDate = new Date(now);
+  checkDate.setDate(checkDate.getDate() + 7); // Check 7 days ahead
+  
+  const allTimezones = [...Object.values(timezones), ...customTimezones];
+  const dstChanges = [];
+  
+  allTimezones.forEach(tz => {
+    if (removedTimezones.includes(tz.cardId)) return;
+    
+    try {
+      const nowOffset = new Date(now.toLocaleString('en-US', { timeZone: tz.timezone })).getTimezoneOffset();
+      const futureOffset = new Date(checkDate.toLocaleString('en-US', { timeZone: tz.timezone })).getTimezoneOffset();
+      
+      if (nowOffset !== futureOffset) {
+        dstChanges.push({
+          name: tz.name || tz.timezone,
+          change: nowOffset > futureOffset ? 'forward' : 'back'
+        });
+      }
+    } catch (e) {
+      console.error('Error checking DST for', tz.timezone, e);
+    }
+  });
+  
+  if (dstChanges.length > 0) {
+    showDSTAlert(dstChanges);
+  }
+}
+
+function showDSTAlert(changes) {
+  const alert = document.getElementById('dst-alert');
+  const message = document.getElementById('dst-message');
+  if (!alert || !message) return;
+  
+  const changeText = changes.map(c => `${c.name} (${c.change === 'forward' ? '+1h' : '-1h'})`).join(', ');
+  message.textContent = `DST change in 7 days: ${changeText}`;
+  alert.style.display = 'flex';
+}
+
+// ==================== SUNRISE/SUNSET ====================
+function calculateSunTimes(lat, lng, date) {
+  // Simplified sunrise/sunset calculation
+  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+  const declination = -23.45 * Math.cos(2 * Math.PI * (dayOfYear + 10) / 365);
+  const decRad = declination * Math.PI / 180;
+  const latRad = lat * Math.PI / 180;
+  
+  const hourAngle = Math.acos(-Math.tan(latRad) * Math.tan(decRad));
+  const sunrise = 12 - hourAngle * 12 / Math.PI - lng / 15;
+  const sunset = 12 + hourAngle * 12 / Math.PI - lng / 15;
+  
+  return {
+    sunrise: `${Math.floor(sunrise)}:${String(Math.floor((sunrise % 1) * 60)).padStart(2, '0')}`,
+    sunset: `${Math.floor(sunset)}:${String(Math.floor((sunset % 1) * 60)).padStart(2, '0')}`
+  };
+}
+
+// City coordinates for sun calculations
+const cityLatLng = {
+  'America/New_York': { lat: 40.7128, lng: -74.006 },
+  'America/Los_Angeles': { lat: 34.0522, lng: -118.2437 },
+  'America/Sao_Paulo': { lat: -23.5505, lng: -46.6333 },
+  'Europe/Rome': { lat: 41.9028, lng: 12.4964 },
+  'Europe/London': { lat: 51.5074, lng: -0.1278 },
+  'Asia/Tokyo': { lat: 35.6762, lng: 139.6503 },
+  'Australia/Sydney': { lat: -33.8688, lng: 151.2093 }
+};
+
+function addSunTimesToCards() {
+  Object.entries(timezones).forEach(([key, tz]) => {
+    const card = document.querySelector(`[data-timezone="${key}"]`);
+    if (!card) return;
+    
+    const coords = cityLatLng[tz.timezone];
+    if (!coords) return;
+    
+    // Remove existing sun times
+    const existing = card.querySelector('.sun-times');
+    if (existing) existing.remove();
+    
+    const sunTimes = calculateSunTimes(coords.lat, coords.lng, new Date());
+    
+    const sunDiv = document.createElement('div');
+    sunDiv.className = 'sun-times';
+    sunDiv.innerHTML = `
+      <span class="sun-time"><span class="sun-icon">🌅</span>${sunTimes.sunrise}</span>
+      <span class="sun-time"><span class="sun-icon">🌇</span>${sunTimes.sunset}</span>
+    `;
+    
+    const timezoneInfo = card.querySelector('.timezone-info');
+    if (timezoneInfo) {
+      timezoneInfo.appendChild(sunDiv);
+    }
+  });
+}
+
+// ==================== ANALOG CLOCK ====================
+let showAnalogClock = false;
+
+function toggleAnalogClock() {
+  showAnalogClock = !showAnalogClock;
+  if (showAnalogClock) {
+    addAnalogClocks();
+  } else {
+    removeAnalogClocks();
+  }
+  chrome.storage.sync.set({ showAnalogClock });
+}
+
+function addAnalogClocks() {
+  Object.entries(timezones).forEach(([key, tz]) => {
+    const card = document.querySelector(`[data-timezone="${key}"]`);
+    if (!card || card.querySelector('.analog-clock')) return;
+    
+    const analogClock = document.createElement('div');
+    analogClock.className = 'analog-clock';
+    analogClock.id = `analog-${key}`;
+    analogClock.innerHTML = `
+      <div class="clock-hand hour"></div>
+      <div class="clock-hand minute"></div>
+      <div class="clock-hand second"></div>
+    `;
+    
+    const timeDisplay = card.querySelector('.time-display');
+    if (timeDisplay) {
+      timeDisplay.parentNode.insertBefore(analogClock, timeDisplay);
+    }
+  });
+  
+  updateAnalogClocks();
+}
+
+function removeAnalogClocks() {
+  document.querySelectorAll('.analog-clock').forEach(clock => clock.remove());
+}
+
+function updateAnalogClocks() {
+  if (!showAnalogClock) return;
+  
+  Object.entries(timezones).forEach(([key, tz]) => {
+    const clock = document.getElementById(`analog-${key}`);
+    if (!clock) return;
+    
+    try {
+      const now = new Date();
+      const tzTime = new Date(now.toLocaleString('en-US', { timeZone: tz.timezone }));
+      
+      const hours = tzTime.getHours() % 12;
+      const minutes = tzTime.getMinutes();
+      const seconds = tzTime.getSeconds();
+      
+      const hourDeg = (hours * 30) + (minutes * 0.5);
+      const minuteDeg = minutes * 6;
+      const secondDeg = seconds * 6;
+      
+      clock.querySelector('.hour').style.transform = `rotate(${hourDeg}deg)`;
+      clock.querySelector('.minute').style.transform = `rotate(${minuteDeg}deg)`;
+      clock.querySelector('.second').style.transform = `rotate(${secondDeg}deg)`;
+    } catch (e) {
+      console.error('Error updating analog clock', key, e);
+    }
+  });
+}
+
+// ==================== HOURLY CHIMES ====================
+let hourlyChimesEnabled = false;
+let lastChimeHour = -1;
+
+function checkHourlyChime() {
+  if (!hourlyChimesEnabled) return;
+  
+  const now = new Date();
+  const currentHour = now.getHours();
+  
+  if (currentHour !== lastChimeHour && now.getMinutes() === 0) {
+    lastChimeHour = currentHour;
+    playSound('chime');
+    showChimeIndicator(currentHour);
+    
+    // Speak the time if speech synthesis is available
+    if (speakTimeEnabled && 'speechSynthesis' in window) {
+      speakTime(currentHour);
+    }
+  }
+}
+
+// Spoken time announcement
+let speakTimeEnabled = false;
+
+function speakTime(hour) {
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  const utterance = new SpeechSynthesisUtterance(`The time is ${displayHour} ${period}`);
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 0.7;
+  window.speechSynthesis.speak(utterance);
+}
+
+function toggleSpeakTime() {
+  speakTimeEnabled = !speakTimeEnabled;
+  chrome.storage.sync.set({ speakTimeEnabled });
+  showToast(speakTimeEnabled ? '🔊 Time announcement enabled' : '🔇 Time announcement disabled');
+}
+
+function showChimeIndicator(hour) {
+  const indicator = document.createElement('div');
+  indicator.className = 'chime-indicator';
+  indicator.innerHTML = `🔔 ${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+  document.body.appendChild(indicator);
+  
+  setTimeout(() => indicator.remove(), 3000);
+}
+
+function toggleHourlyChimes() {
+  hourlyChimesEnabled = !hourlyChimesEnabled;
+  chrome.storage.sync.set({ hourlyChimesEnabled });
+  showToast(hourlyChimesEnabled ? '🔔 Hourly chimes enabled' : '🔕 Hourly chimes disabled');
+}
+
+// ==================== WEATHER (Placeholder - needs API) ====================
+async function fetchWeather(city) {
+  // City coordinates for Open-Meteo API
+  const cityCoords = {
+    'New York': { lat: 40.7128, lon: -74.006 },
+    'Los Angeles': { lat: 34.0522, lon: -118.2437 },
+    'São Paulo': { lat: -23.5505, lon: -46.6333 },
+    'Rome': { lat: 41.9028, lon: 12.4964 },
+    'London': { lat: 51.5074, lon: -0.1278 },
+    'Tokyo': { lat: 35.6762, lon: 139.6503 }
+  };
+  
+  const coords = cityCoords[city];
+  if (!coords) return { temp: '--', icon: '🌡️' };
+  
+  try {
+    // Free Open-Meteo API - no key required
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`
+    );
+    
+    if (!response.ok) throw new Error('Weather fetch failed');
+    
+    const data = await response.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const weatherCode = data.current.weather_code;
+    
+    // Convert WMO weather codes to icons
+    const getWeatherIcon = (code) => {
+      if (code === 0) return '☀️';
+      if (code <= 3) return '⛅';
+      if (code <= 48) return '🌫️';
+      if (code <= 57) return '🌧️';
+      if (code <= 67) return '🌧️';
+      if (code <= 77) return '❄️';
+      if (code <= 82) return '🌧️';
+      if (code <= 86) return '🌨️';
+      if (code >= 95) return '⛈️';
+      return '🌡️';
+    };
+    
+    return { temp, icon: getWeatherIcon(weatherCode) };
+  } catch (error) {
+    console.log('Weather fetch error (offline?):', error.message);
+    // Return cached or default data
+    return { temp: '--', icon: '📡' };
+  }
+}
+
+async function addWeatherToCards() {
+  const cities = {
+    'est': 'New York',
+    'pst': 'Los Angeles',
+    'brazil': 'São Paulo',
+    'italy': 'Rome'
+  };
+  
+  for (const [key, city] of Object.entries(cities)) {
+    const card = document.querySelector(`[data-timezone="${key}"]`);
+    if (!card) continue;
+    
+    // Remove existing weather
+    const existing = card.querySelector('.weather-info');
+    if (existing) existing.remove();
+    
+    const weather = await fetchWeather(city);
+    
+    const weatherDiv = document.createElement('div');
+    weatherDiv.className = 'weather-info';
+    weatherDiv.innerHTML = `
+      <span class="weather-icon">${weather.icon}</span>
+      <span class="weather-temp">${weather.temp}°F</span>
+    `;
+    
+    const timezoneInfo = card.querySelector('.timezone-info');
+    if (timezoneInfo) {
+      timezoneInfo.appendChild(weatherDiv);
+    }
+  }
+}
+
+// ==================== HOLIDAYS ====================
+const holidays = {
+  us: [
+    { name: "New Year's Day", month: 1, day: 1 },
+    { name: "Martin Luther King Jr. Day", month: 1, day: 20 },
+    { name: "Presidents' Day", month: 2, day: 17 },
+    { name: "Memorial Day", month: 5, day: 26 },
+    { name: "Independence Day", month: 7, day: 4 },
+    { name: "Labor Day", month: 9, day: 1 },
+    { name: "Columbus Day", month: 10, day: 14 },
+    { name: "Veterans Day", month: 11, day: 11 },
+    { name: "Thanksgiving", month: 11, day: 28 },
+    { name: "Christmas Day", month: 12, day: 25 }
+  ],
+  brazil: [
+    { name: "Ano Novo", month: 1, day: 1 },
+    { name: "Carnaval", month: 2, day: 25 },
+    { name: "Sexta-feira Santa", month: 4, day: 18 },
+    { name: "Tiradentes", month: 4, day: 21 },
+    { name: "Dia do Trabalho", month: 5, day: 1 },
+    { name: "Corpus Christi", month: 6, day: 19 },
+    { name: "Independência", month: 9, day: 7 },
+    { name: "Nossa Senhora Aparecida", month: 10, day: 12 },
+    { name: "Finados", month: 11, day: 2 },
+    { name: "Proclamação da República", month: 11, day: 15 },
+    { name: "Natal", month: 12, day: 25 }
+  ],
+  italy: [
+    { name: "Capodanno", month: 1, day: 1 },
+    { name: "Epifania", month: 1, day: 6 },
+    { name: "Pasqua", month: 4, day: 20 },
+    { name: "Lunedì dell'Angelo", month: 4, day: 21 },
+    { name: "Festa della Liberazione", month: 4, day: 25 },
+    { name: "Festa dei Lavoratori", month: 5, day: 1 },
+    { name: "Festa della Repubblica", month: 6, day: 2 },
+    { name: "Ferragosto", month: 8, day: 15 },
+    { name: "Tutti i Santi", month: 11, day: 1 },
+    { name: "Immacolata Concezione", month: 12, day: 8 },
+    { name: "Natale", month: 12, day: 25 },
+    { name: "Santo Stefano", month: 12, day: 26 }
+  ],
+  uk: [
+    { name: "New Year's Day", month: 1, day: 1 },
+    { name: "Good Friday", month: 4, day: 18 },
+    { name: "Easter Monday", month: 4, day: 21 },
+    { name: "Early May Bank Holiday", month: 5, day: 5 },
+    { name: "Spring Bank Holiday", month: 5, day: 26 },
+    { name: "Summer Bank Holiday", month: 8, day: 25 },
+    { name: "Christmas Day", month: 12, day: 25 },
+    { name: "Boxing Day", month: 12, day: 26 }
+  ]
+};
+
+const countryFlags = {
+  us: '🇺🇸',
+  brazil: '🇧🇷',
+  italy: '🇮🇹',
+  uk: '🇬🇧'
+};
+
+function getUpcomingHolidays(region = 'all') {
+  const today = new Date();
+  const year = today.getFullYear();
+  const allHolidays = [];
+  
+  const regions = region === 'all' ? Object.keys(holidays) : [region];
+  
+  regions.forEach(r => {
+    if (!holidays[r]) return;
+    holidays[r].forEach(h => {
+      const holidayDate = new Date(year, h.month - 1, h.day);
+      // If holiday has passed this year, use next year
+      if (holidayDate < today) {
+        holidayDate.setFullYear(year + 1);
+      }
+      
+      const daysUntil = Math.ceil((holidayDate - today) / (1000 * 60 * 60 * 24));
+      
+      allHolidays.push({
+        ...h,
+        date: holidayDate,
+        daysUntil,
+        country: r,
+        flag: countryFlags[r]
+      });
+    });
+  });
+  
+  return allHolidays.sort((a, b) => a.date - b.date).slice(0, 15);
+}
+
+function renderHolidays(region = 'all') {
+  const container = document.getElementById('holidays-list');
+  if (!container) return;
+  
+  const upcomingHolidays = getUpcomingHolidays(region);
+  
+  container.innerHTML = upcomingHolidays.map(h => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const isToday = h.daysUntil === 0;
+    const isUpcoming = h.daysUntil <= 7 && h.daysUntil > 0;
+    
+    return `
+      <div class="holiday-item ${isToday ? 'today' : ''} ${isUpcoming ? 'upcoming' : ''}">
+        <div class="holiday-date">
+          <div class="holiday-day">${h.day}</div>
+          <div class="holiday-month">${months[h.month - 1]}</div>
+        </div>
+        <div class="holiday-info">
+          <div class="holiday-name">${h.name}</div>
+          <div class="holiday-country">${h.flag} ${h.country.toUpperCase()}</div>
+        </div>
+        <div class="holiday-countdown">
+          ${isToday ? '🎉 Today!' : `${h.daysUntil} days`}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== BADGE COUNTDOWN ====================
+let badgeMode = 'none'; // 'none', 'next-hour', 'countdown', 'time'
+
+function updateBadge() {
+  if (badgeMode === 'none') {
+    chrome.action?.setBadgeText({ text: '' });
+    return;
+  }
+  
+  const now = new Date();
+  
+  switch (badgeMode) {
+    case 'next-hour':
+      const minutesLeft = 60 - now.getMinutes();
+      chrome.action?.setBadgeText({ text: `${minutesLeft}m` });
+      chrome.action?.setBadgeBackgroundColor({ color: '#667eea' });
+      break;
+    
+    case 'time':
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const timeStr = `${hours}:${String(minutes).padStart(2, '0')}`;
+      chrome.action?.setBadgeText({ text: timeStr });
+      chrome.action?.setBadgeBackgroundColor({ color: '#22c55e' });
+      break;
+    
+    case 'countdown':
+      // Countdown to end of business day (5 PM)
+      const endOfDay = new Date(now);
+      endOfDay.setHours(17, 0, 0, 0);
+      if (now > endOfDay) {
+        chrome.action?.setBadgeText({ text: '✓' });
+      } else {
+        const hoursLeft = Math.floor((endOfDay - now) / (1000 * 60 * 60));
+        chrome.action?.setBadgeText({ text: `${hoursLeft}h` });
+      }
+      chrome.action?.setBadgeBackgroundColor({ color: '#f59e0b' });
+      break;
+  }
+}
+
+function setBadgeMode(mode) {
+  badgeMode = mode;
+  chrome.storage.sync.set({ badgeMode });
+  updateBadge();
+}
+
+// ==================== TARGET COUNTDOWN ====================
+let targetCountdowns = [];
+let countdownUpdateInterval = null;
+
+function initTargetCountdown() {
+  const panel = document.getElementById('target-countdown-panel');
+  const openBtn = document.getElementById('target-countdown-btn');
+  const closeBtn = document.getElementById('close-target-countdown');
+  const startBtn = document.getElementById('start-target-countdown');
+  const tzSelect = document.getElementById('target-timezone-select');
+  
+  // Populate timezone select
+  if (tzSelect) {
+    const allTzs = [...Object.entries(timezones), ...customTimezones.map(t => [t.cardId, t])];
+    allTzs.forEach(([id, tz]) => {
+      const option = document.createElement('option');
+      option.value = tz.timezone;
+      option.textContent = tz.name || id;
+      tzSelect.appendChild(option);
+    });
+  }
+  
+  openBtn?.addEventListener('click', () => {
+    panel.classList.add('active');
+    document.getElementById('more-menu').classList.remove('active');
+  });
+  
+  closeBtn?.addEventListener('click', () => {
+    panel.classList.remove('active');
+  });
+  
+  startBtn?.addEventListener('click', () => {
+    const timeInput = document.getElementById('target-time-input').value;
+    const timezone = document.getElementById('target-timezone-select').value;
+    const label = document.getElementById('target-label-input').value || 'Target time';
+    
+    if (!timeInput) {
+      showToast('Please enter a target time');
+      return;
+    }
+    
+    addTargetCountdown(timeInput, timezone, label);
+  });
+  
+  // Load saved countdowns
+  chrome.storage.local.get(['targetCountdowns'], (result) => {
+    if (result.targetCountdowns) {
+      targetCountdowns = result.targetCountdowns;
+      renderActiveCountdowns();
+    }
+  });
+  
+  // Start update interval
+  countdownUpdateInterval = setInterval(updateAllCountdowns, 1000);
+}
+
+function addTargetCountdown(timeStr, timezone, label) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  const now = new Date();
+  
+  // Create target date in the specified timezone
+  let targetDate = new Date();
+  if (timezone === 'local') {
+    targetDate.setHours(hours, minutes, 0, 0);
+  } else {
+    // Calculate target time in UTC then adjust
+    const tzNow = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+    targetDate = new Date(now.getTime() + (hours * 60 + minutes) * 60000 - (tzNow.getHours() * 60 + tzNow.getMinutes()) * 60000);
+    targetDate.setSeconds(0, 0);
+  }
+  
+  // If target is in the past, set for tomorrow
+  if (targetDate <= now) {
+    targetDate.setDate(targetDate.getDate() + 1);
+  }
+  
+  const countdown = {
+    id: Date.now(),
+    targetTime: targetDate.getTime(),
+    timezone,
+    label,
+    timeStr
+  };
+  
+  targetCountdowns.push(countdown);
+  chrome.storage.local.set({ targetCountdowns });
+  renderActiveCountdowns();
+  showToast(`Countdown started: ${label}`);
+}
+
+function removeTargetCountdown(id) {
+  targetCountdowns = targetCountdowns.filter(c => c.id !== id);
+  chrome.storage.local.set({ targetCountdowns });
+  renderActiveCountdowns();
+}
+
+function updateAllCountdowns() {
+  const container = document.getElementById('active-countdowns');
+  if (!container) return;
+  
+  const now = Date.now();
+  let hasExpired = false;
+  
+  targetCountdowns.forEach(countdown => {
+    const remaining = countdown.targetTime - now;
+    const el = document.getElementById(`countdown-${countdown.id}`);
+    
+    if (remaining <= 0) {
+      hasExpired = true;
+      if (el) {
+        el.querySelector('.countdown-remaining').textContent = '🎉 Time reached!';
+        el.classList.add('completed');
+      }
+      // Play sound and show notification
+      playSound('timer');
+      if (Notification.permission === 'granted') {
+        new Notification(`🎯 ${countdown.label}`, {
+          body: 'Your target time has been reached!',
+          icon: 'icons/icon128.png'
+        });
+      }
+    } else if (el) {
+      const hours = Math.floor(remaining / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      const seconds = Math.floor((remaining % 60000) / 1000);
+      el.querySelector('.countdown-remaining').textContent = 
+        `${hours}h ${minutes}m ${seconds}s`;
+    }
+  });
+  
+  // Remove completed countdowns after a delay
+  if (hasExpired) {
+    setTimeout(() => {
+      targetCountdowns = targetCountdowns.filter(c => c.targetTime > Date.now());
+      chrome.storage.local.set({ targetCountdowns });
+      renderActiveCountdowns();
+    }, 5000);
+  }
+}
+
+function renderActiveCountdowns() {
+  const container = document.getElementById('active-countdowns');
+  if (!container) return;
+  
+  if (targetCountdowns.length === 0) {
+    container.innerHTML = '<p class="no-countdowns">No active countdowns</p>';
+    return;
+  }
+  
+  container.innerHTML = targetCountdowns.map(countdown => `
+    <div class="countdown-item" id="countdown-${countdown.id}">
+      <div class="countdown-info">
+        <span class="countdown-label">${countdown.label}</span>
+        <span class="countdown-target">${countdown.timeStr}</span>
+      </div>
+      <div class="countdown-remaining">Calculating...</div>
+      <button class="countdown-remove" data-id="${countdown.id}">×</button>
+    </div>
+  `).join('');
+  
+  // Add remove listeners
+  container.querySelectorAll('.countdown-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      removeTargetCountdown(parseInt(e.target.dataset.id));
+    });
+  });
+  
+  // Immediately update
+  updateAllCountdowns();
+}
+
+// ==================== INITIALIZE NEW FEATURES ====================
+function initNewFeatures() {
+  // Check for first-time user and show onboarding
+  chrome.storage.local.get(['onboardingComplete'], (result) => {
+    if (!result.onboardingComplete) {
+      showOnboarding();
+    }
+  });
+  
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  
+  // Load saved states (synced settings)
+  chrome.storage.sync.get(['showAnalogClock', 'hourlyChimesEnabled', 'speakTimeEnabled'], (result) => {
+    if (result.showAnalogClock) {
+      showAnalogClock = true;
+      addAnalogClocks();
+    }
+    if (result.hourlyChimesEnabled) {
+      hourlyChimesEnabled = true;
+    }
+    if (result.speakTimeEnabled) {
+      speakTimeEnabled = true;
+    }
+  });
+  
+  // Initialize target countdown feature
+  initTargetCountdown();
+  
+  // Load alarms and profiles
+  loadAlarms();
+  loadProfiles();
+  
+  // Add sun times to cards
+  addSunTimesToCards();
+  
+  // Add weather (mock data)
+  addWeatherToCards();
+  
+  // Check for DST changes
+  checkDSTChanges();
+  
+  // Set up intervals
+  setInterval(checkAlarms, 60000); // Check alarms every minute
+  setInterval(checkHourlyChime, 1000); // Check for hourly chime
+  setInterval(updateAnalogClocks, 1000); // Update analog clocks
+  
+  // Stopwatch panel
+  document.getElementById('stopwatch-btn')?.addEventListener('click', () => {
+    document.getElementById('stopwatch-panel').classList.add('active');
+  });
+  document.getElementById('close-stopwatch')?.addEventListener('click', () => {
+    document.getElementById('stopwatch-panel').classList.remove('active');
+  });
+  
+  // Stopwatch tabs
+  document.querySelectorAll('.stopwatch-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.stopwatch-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.stopwatch-view').forEach(v => v.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`${tab.dataset.tab}-view`)?.classList.add('active');
+    });
+  });
+  
+  // Stopwatch controls
+  document.getElementById('stopwatch-start')?.addEventListener('click', startStopwatch);
+  document.getElementById('stopwatch-stop')?.addEventListener('click', stopStopwatch);
+  document.getElementById('stopwatch-reset')?.addEventListener('click', resetStopwatch);
+  document.getElementById('stopwatch-lap')?.addEventListener('click', addLap);
+  
+  // Timer controls
+  document.getElementById('timer-start')?.addEventListener('click', startTimer);
+  document.getElementById('timer-pause')?.addEventListener('click', pauseTimer);
+  document.getElementById('timer-reset')?.addEventListener('click', resetTimer);
+  
+  // Timer inputs
+  ['timer-hours', 'timer-minutes', 'timer-seconds'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', setTimerFromInputs);
+  });
+  
+  // Timer presets
+  document.querySelectorAll('.timer-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const minutes = parseInt(btn.dataset.minutes);
+      document.getElementById('timer-hours').value = Math.floor(minutes / 60);
+      document.getElementById('timer-minutes').value = minutes % 60;
+      document.getElementById('timer-seconds').value = 0;
+      setTimerFromInputs();
+    });
+  });
+  
+  // Pomodoro controls
+  document.getElementById('pomodoro-start')?.addEventListener('click', startPomodoro);
+  document.getElementById('pomodoro-pause')?.addEventListener('click', pausePomodoro);
+  document.getElementById('pomodoro-reset')?.addEventListener('click', resetPomodoro);
+  document.getElementById('pomodoro-skip')?.addEventListener('click', skipPomodoro);
+  
+  // Pomodoro settings
+  ['pomodoro-work', 'pomodoro-break', 'pomodoro-long-break'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => {
+      if (!pomodoroState.running) {
+        resetPomodoro();
+      }
+    });
+  });
+  
+  // Alarm panel
+  document.getElementById('alarm-btn')?.addEventListener('click', () => {
+    document.getElementById('alarm-panel').classList.add('active');
+    populateAlarmTimezoneSelect();
+  });
+  document.getElementById('close-alarm')?.addEventListener('click', () => {
+    document.getElementById('alarm-panel').classList.remove('active');
+  });
+  document.getElementById('add-alarm-btn')?.addEventListener('click', addAlarm);
+  
+  // Timeline panel
+  document.getElementById('timeline-btn')?.addEventListener('click', () => {
+    document.getElementById('timeline-panel').classList.add('active');
+    timelineOffset = 0;
+    renderTimeline();
+  });
+  document.getElementById('close-timeline')?.addEventListener('click', () => {
+    document.getElementById('timeline-panel').classList.remove('active');
+  });
+  document.getElementById('timeline-prev')?.addEventListener('click', () => {
+    timelineOffset--;
+    renderTimeline();
+  });
+  document.getElementById('timeline-next')?.addEventListener('click', () => {
+    timelineOffset++;
+    renderTimeline();
+  });
+  
+  // World map panel
+  document.getElementById('worldmap-btn')?.addEventListener('click', () => {
+    document.getElementById('worldmap-panel').classList.add('active');
+    renderWorldMap();
+  });
+  document.getElementById('close-worldmap')?.addEventListener('click', () => {
+    document.getElementById('worldmap-panel').classList.remove('active');
+  });
+  
+  // Profiles panel
+  document.getElementById('profiles-btn')?.addEventListener('click', () => {
+    document.getElementById('profiles-panel').classList.add('active');
+  });
+  document.getElementById('close-profiles')?.addEventListener('click', () => {
+    document.getElementById('profiles-panel').classList.remove('active');
+  });
+  document.getElementById('save-profile-btn')?.addEventListener('click', createProfile);
+  
+  // DST alert
+  document.getElementById('dst-dismiss')?.addEventListener('click', () => {
+    document.getElementById('dst-alert').style.display = 'none';
+  });
+  
+  // Holidays panel
+  document.getElementById('holidays-btn')?.addEventListener('click', () => {
+    document.getElementById('holidays-panel').classList.add('active');
+    renderHolidays('all');
+  });
+  document.getElementById('close-holidays')?.addEventListener('click', () => {
+    document.getElementById('holidays-panel').classList.remove('active');
+  });
+  document.querySelectorAll('.holidays-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.holidays-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderHolidays(tab.dataset.region);
+    });
+  });
+  
+  // Settings toggles for new features
+  document.getElementById('toggle-analog')?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      showAnalogClock = true;
+      addAnalogClocks();
+    } else {
+      showAnalogClock = false;
+      removeAnalogClocks();
+    }
+    chrome.storage.sync.set({ showAnalogClock });
+  });
+  
+  document.getElementById('toggle-chimes')?.addEventListener('change', (e) => {
+    hourlyChimesEnabled = e.target.checked;
+    chrome.storage.sync.set({ hourlyChimesEnabled });
+    showToast(hourlyChimesEnabled ? '🔔 Hourly chimes enabled' : '🔕 Hourly chimes disabled');
+  });
+  
+  document.getElementById('toggle-speak-time')?.addEventListener('change', (e) => {
+    speakTimeEnabled = e.target.checked;
+    chrome.storage.sync.set({ speakTimeEnabled });
+    showToast(speakTimeEnabled ? '🔊 Time announcement enabled' : '🔇 Time announcement disabled');
+  });
+  
+  document.getElementById('toggle-weather')?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      addWeatherToCards();
+    } else {
+      document.querySelectorAll('.weather-info').forEach(el => el.remove());
+    }
+    chrome.storage.sync.set({ showWeather: e.target.checked });
+  });
+  
+  document.getElementById('toggle-sun-times')?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      addSunTimesToCards();
+    } else {
+      document.querySelectorAll('.sun-times').forEach(el => el.remove());
+    }
+    chrome.storage.sync.set({ showSunTimes: e.target.checked });
+  });
+  
+  // Load saved toggle states (synced settings)
+  chrome.storage.sync.get(['showAnalogClock', 'hourlyChimesEnabled', 'speakTimeEnabled', 'showWeather', 'showSunTimes', 'badgeMode'], (result) => {
+    if (result.showAnalogClock) {
+      document.getElementById('toggle-analog').checked = true;
+    }
+    if (result.hourlyChimesEnabled) {
+      document.getElementById('toggle-chimes').checked = true;
+    }
+    if (result.speakTimeEnabled) {
+      document.getElementById('toggle-speak-time').checked = true;
+    }
+    if (result.showWeather !== false) {
+      document.getElementById('toggle-weather').checked = true;
+    }
+    if (result.showSunTimes !== false) {
+      document.getElementById('toggle-sun-times').checked = true;
+    }
+    if (result.badgeMode) {
+      badgeMode = result.badgeMode;
+    }
+  });
+  
+  // Badge mode radio buttons
+  document.querySelectorAll('input[name="badge-mode"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      setBadgeMode(e.target.value);
+    });
+  });
+  
+  // Set initial badge mode from storage (synced)
+  chrome.storage.sync.get(['badgeMode'], (result) => {
+    if (result.badgeMode) {
+      const radio = document.getElementById(`badge-${result.badgeMode}`);
+      if (radio) radio.checked = true;
+    }
+  });
+  
+  // Update badge every minute
+  updateBadge();
+  setInterval(updateBadge, 60000);
+}
+
+function populateAlarmTimezoneSelect() {
+  const select = document.getElementById('alarm-timezone');
+  if (!select) return;
+  
+  select.innerHTML = '<option value="local">Local Time</option>';
+  
+  const allTimezones = [...Object.values(timezones), ...customTimezones];
+  allTimezones.forEach(tz => {
+    if (removedTimezones.includes(tz.cardId)) return;
+    const option = document.createElement('option');
+    option.value = tz.timezone;
+    option.textContent = tz.name || tz.timezone;
+    select.appendChild(option);
+  });
+}
+
+// ==================== ONBOARDING ====================
+function showOnboarding() {
+  const modal = document.getElementById('onboarding-modal');
+  if (modal) {
+    modal.classList.add('active');
+    
+    const startBtn = document.getElementById('onboarding-start-btn');
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        chrome.storage.local.set({ onboardingComplete: true });
+        showToast('Welcome! Click any time to copy it.');
+      });
+    }
+    
+    // Also close on click outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        chrome.storage.local.set({ onboardingComplete: true });
+      }
+    });
+  }
+}
+
+// ==================== DRAG AND DROP REORDERING ====================
+
+let draggedCard = null;
+let draggedCardId = null;
+
+function initDragAndDrop() {
+  const clockGrid = document.getElementById('clock-grid');
+  
+  // Make all clock cards draggable
+  const cards = clockGrid.querySelectorAll('.clock-card');
+  cards.forEach(card => {
+    makeCardDraggable(card);
+  });
+  
+  // Grid drop events
+  clockGrid.addEventListener('dragover', handleDragOver);
+  clockGrid.addEventListener('drop', handleDrop);
+  clockGrid.addEventListener('dragleave', handleDragLeave);
+}
+
+function makeCardDraggable(card) {
+  card.setAttribute('draggable', 'true');
+  card.addEventListener('dragstart', handleDragStart);
+  card.addEventListener('dragend', handleDragEnd);
+  card.addEventListener('dragenter', handleDragEnter);
+}
+
+function handleDragStart(e) {
+  draggedCard = this;
+  draggedCardId = this.dataset.timezone;
+  
+  // Set drag data
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', draggedCardId);
+  
+  // Add dragging class after a short delay to allow the drag image to be captured
+  setTimeout(() => {
+    this.classList.add('dragging');
+  }, 0);
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+  
+  // Remove all drag-over states
+  document.querySelectorAll('.clock-card').forEach(card => {
+    card.classList.remove('drag-over', 'drag-over-left', 'drag-over-right');
+  });
+  
+  draggedCard = null;
+  draggedCardId = null;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+  e.preventDefault();
+  
+  if (this === draggedCard) return;
+  
+  // Remove drag-over from all cards
+  document.querySelectorAll('.clock-card').forEach(card => {
+    card.classList.remove('drag-over', 'drag-over-left', 'drag-over-right');
+  });
+  
+  // Add drag-over to this card
+  this.classList.add('drag-over');
+  
+  // Determine if dragging to left or right
+  const rect = this.getBoundingClientRect();
+  const midpoint = rect.left + rect.width / 2;
+  
+  if (e.clientX < midpoint) {
+    this.classList.add('drag-over-left');
+  } else {
+    this.classList.add('drag-over-right');
+  }
+}
+
+function handleDragLeave(e) {
+  // Only remove if we're actually leaving the card
+  const relatedTarget = e.relatedTarget;
+  if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+    e.currentTarget.classList.remove('drag-over', 'drag-over-left', 'drag-over-right');
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  
+  const clockGrid = document.getElementById('clock-grid');
+  const targetCard = e.target.closest('.clock-card');
+  
+  if (!targetCard || targetCard === draggedCard || !draggedCard) return;
+  
+  // Determine drop position (before or after target)
+  const rect = targetCard.getBoundingClientRect();
+  const midpoint = rect.left + rect.width / 2;
+  const dropBefore = e.clientX < midpoint;
+  
+  // Move the card in the DOM
+  if (dropBefore) {
+    clockGrid.insertBefore(draggedCard, targetCard);
+  } else {
+    const nextSibling = targetCard.nextElementSibling;
+    if (nextSibling) {
+      clockGrid.insertBefore(draggedCard, nextSibling);
+    } else {
+      clockGrid.appendChild(draggedCard);
+    }
+  }
+  
+  // Remove drag states
+  targetCard.classList.remove('drag-over', 'drag-over-left', 'drag-over-right');
+  
+  // Save the new order
+  saveTimezoneOrder();
+  
+  // Show feedback
+  showToast('Timezone order updated');
+}
+
+function saveTimezoneOrder() {
+  const clockGrid = document.getElementById('clock-grid');
+  const cards = clockGrid.querySelectorAll('.clock-card');
+  
+  timezoneOrder = Array.from(cards)
+    .filter(card => card.style.display !== 'none')
+    .map(card => card.dataset.timezone);
+  
+  saveSettings();
+}
+
+function applyTimezoneOrder() {
+  if (!timezoneOrder || timezoneOrder.length === 0) return;
+  
+  const clockGrid = document.getElementById('clock-grid');
+  const cards = Array.from(clockGrid.querySelectorAll('.clock-card'));
+  
+  // Create a map of cardId to card element
+  const cardMap = {};
+  cards.forEach(card => {
+    cardMap[card.dataset.timezone] = card;
+  });
+  
+  // Reorder cards according to saved order
+  timezoneOrder.forEach(cardId => {
+    const card = cardMap[cardId];
+    if (card) {
+      clockGrid.appendChild(card);
+    }
+  });
+  
+  // Append any cards not in the saved order (new cards)
+  cards.forEach(card => {
+    if (!timezoneOrder.includes(card.dataset.timezone)) {
+      clockGrid.appendChild(card);
+    }
+  });
+}
+
+// Override renderCustomTimezone to make new cards draggable
+const originalRenderCustomTimezone = renderCustomTimezone;
+renderCustomTimezone = function(tzConfig) {
+  originalRenderCustomTimezone(tzConfig);
+  
+  // Make the new card draggable
+  const card = document.querySelector(`[data-timezone="${tzConfig.cardId}"]`);
+  if (card) {
+    makeCardDraggable(card);
+  }
+};
+
 // Start when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+    initNewFeatures();
+    initDragAndDrop();
+    // Apply saved order after a short delay to ensure all cards are rendered
+    setTimeout(applyTimezoneOrder, 100);
+  });
 } else {
   init();
+  initNewFeatures();
+  initDragAndDrop();
+  // Apply saved order after a short delay to ensure all cards are rendered
+  setTimeout(applyTimezoneOrder, 100);
 }

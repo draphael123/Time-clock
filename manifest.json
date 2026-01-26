@@ -1,14 +1,22 @@
 {
   "manifest_version": 3,
-  "name": "World Clock - EST, PST, Brazil & Italy",
-  "version": "2.0.0",
-  "version_name": "2.0.0 - Major Update",
-  "description": "Beautiful Chrome extension displaying EST, PST, Brazil, and Italy time zones in real-time. Features 12-hour format, dark mode, copy to clipboard, and more!",
+  "name": "__MSG_extName__",
+  "version": "3.1.0",
+  "version_name": "3.1.0 - Drag & Reorder",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "author": "World Clock Extension",
   "permissions": [
     "storage",
-    "notifications"
+    "notifications",
+    "alarms",
+    "contextMenus",
+    "scripting",
+    "activeTab"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -21,6 +29,25 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+W",
+        "mac": "MacCtrl+W"
+      },
+      "description": "Open World Clock popup"
+    },
+    "quick-copy-time": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "MacCtrl+T"
+      },
+      "description": "Copy current time to clipboard"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
   }
 }
 
