@@ -1,0 +1,159 @@
+{
+  "extName": {
+    "message": "Relógio Mundial - EST, PST, Brasil e Itália",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Lindo relógio mundial com cronômetro, temporizador, pomodoro, alarmes, mapa mundial, linha do tempo, perfis, clima e mais de 560 fusos horários!",
+    "description": "Extension description"
+  },
+  "appTitle": {
+    "message": "Relógio Mundial",
+    "description": "Application title"
+  },
+  "settings": {
+    "message": "Configurações",
+    "description": "Settings button label"
+  },
+  "addTimezone": {
+    "message": "Adicionar Fuso Horário",
+    "description": "Add timezone button"
+  },
+  "darkMode": {
+    "message": "Modo Escuro",
+    "description": "Dark mode toggle"
+  },
+  "hour24": {
+    "message": "Formato 24 horas",
+    "description": "24-hour time format option"
+  },
+  "showSeconds": {
+    "message": "Mostrar segundos",
+    "description": "Show seconds option"
+  },
+  "compactMode": {
+    "message": "Modo Compacto",
+    "description": "Compact view mode"
+  },
+  "stopwatch": {
+    "message": "Cronômetro",
+    "description": "Stopwatch feature"
+  },
+  "timer": {
+    "message": "Temporizador",
+    "description": "Timer feature"
+  },
+  "pomodoro": {
+    "message": "Pomodoro",
+    "description": "Pomodoro timer feature"
+  },
+  "alarms": {
+    "message": "Alarmes",
+    "description": "Alarms feature"
+  },
+  "timeConverter": {
+    "message": "Conversor de Hora",
+    "description": "Time converter feature"
+  },
+  "worldMap": {
+    "message": "Mapa Mundial",
+    "description": "World map view"
+  },
+  "timeline": {
+    "message": "Linha do Tempo",
+    "description": "Timeline comparison view"
+  },
+  "profiles": {
+    "message": "Perfis",
+    "description": "Timezone profiles"
+  },
+  "holidays": {
+    "message": "Feriados",
+    "description": "Upcoming holidays"
+  },
+  "search": {
+    "message": "Buscar",
+    "description": "Search button/label"
+  },
+  "share": {
+    "message": "Compartilhar",
+    "description": "Share button"
+  },
+  "refresh": {
+    "message": "Atualizar",
+    "description": "Refresh button"
+  },
+  "close": {
+    "message": "Fechar",
+    "description": "Close button"
+  },
+  "save": {
+    "message": "Salvar",
+    "description": "Save button"
+  },
+  "cancel": {
+    "message": "Cancelar",
+    "description": "Cancel button"
+  },
+  "delete": {
+    "message": "Excluir",
+    "description": "Delete button"
+  },
+  "edit": {
+    "message": "Editar",
+    "description": "Edit button"
+  },
+  "start": {
+    "message": "Iniciar",
+    "description": "Start button"
+  },
+  "stop": {
+    "message": "Parar",
+    "description": "Stop button"
+  },
+  "reset": {
+    "message": "Reiniciar",
+    "description": "Reset button"
+  },
+  "lap": {
+    "message": "Volta",
+    "description": "Lap button for stopwatch"
+  },
+  "copied": {
+    "message": "Copiado!",
+    "description": "Copied to clipboard notification"
+  },
+  "businessHours": {
+    "message": "Horário Comercial",
+    "description": "Business hours indicator"
+  },
+  "sunrise": {
+    "message": "Nascer do Sol",
+    "description": "Sunrise time"
+  },
+  "sunset": {
+    "message": "Pôr do Sol",
+    "description": "Sunset time"
+  },
+  "weather": {
+    "message": "Clima",
+    "description": "Weather information"
+  },
+  "welcomeTitle": {
+    "message": "Bem-vindo ao Relógio Mundial!",
+    "description": "Onboarding title"
+  },
+  "welcomeMessage": {
+    "message": "Sua extensão de relógio mundial com privacidade em primeiro lugar e repleta de recursos.",
+    "description": "Onboarding welcome message"
+  },
+  "getStarted": {
+    "message": "Começar",
+    "description": "Get started button"
+  },
+  "keyboardShortcuts": {
+    "message": "Pressione ? para atalhos de teclado",
+    "description": "Keyboard shortcuts hint"
+  }
+}
+

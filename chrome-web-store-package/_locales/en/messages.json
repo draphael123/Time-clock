@@ -1,0 +1,159 @@
+{
+  "extName": {
+    "message": "World Clock - EST, PST, Brazil & Italy",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Beautiful world clock with stopwatch, timer, pomodoro, alarms, world map, timeline view, profiles, weather, and 560+ timezones!",
+    "description": "Extension description"
+  },
+  "appTitle": {
+    "message": "World Clock",
+    "description": "Application title"
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings button label"
+  },
+  "addTimezone": {
+    "message": "Add Timezone",
+    "description": "Add timezone button"
+  },
+  "darkMode": {
+    "message": "Dark Mode",
+    "description": "Dark mode toggle"
+  },
+  "hour24": {
+    "message": "24-hour format",
+    "description": "24-hour time format option"
+  },
+  "showSeconds": {
+    "message": "Show seconds",
+    "description": "Show seconds option"
+  },
+  "compactMode": {
+    "message": "Compact Mode",
+    "description": "Compact view mode"
+  },
+  "stopwatch": {
+    "message": "Stopwatch",
+    "description": "Stopwatch feature"
+  },
+  "timer": {
+    "message": "Timer",
+    "description": "Timer feature"
+  },
+  "pomodoro": {
+    "message": "Pomodoro",
+    "description": "Pomodoro timer feature"
+  },
+  "alarms": {
+    "message": "Alarms",
+    "description": "Alarms feature"
+  },
+  "timeConverter": {
+    "message": "Time Converter",
+    "description": "Time converter feature"
+  },
+  "worldMap": {
+    "message": "World Map",
+    "description": "World map view"
+  },
+  "timeline": {
+    "message": "Timeline",
+    "description": "Timeline comparison view"
+  },
+  "profiles": {
+    "message": "Profiles",
+    "description": "Timezone profiles"
+  },
+  "holidays": {
+    "message": "Holidays",
+    "description": "Upcoming holidays"
+  },
+  "search": {
+    "message": "Search",
+    "description": "Search button/label"
+  },
+  "share": {
+    "message": "Share",
+    "description": "Share button"
+  },
+  "refresh": {
+    "message": "Refresh",
+    "description": "Refresh button"
+  },
+  "close": {
+    "message": "Close",
+    "description": "Close button"
+  },
+  "save": {
+    "message": "Save",
+    "description": "Save button"
+  },
+  "cancel": {
+    "message": "Cancel",
+    "description": "Cancel button"
+  },
+  "delete": {
+    "message": "Delete",
+    "description": "Delete button"
+  },
+  "edit": {
+    "message": "Edit",
+    "description": "Edit button"
+  },
+  "start": {
+    "message": "Start",
+    "description": "Start button"
+  },
+  "stop": {
+    "message": "Stop",
+    "description": "Stop button"
+  },
+  "reset": {
+    "message": "Reset",
+    "description": "Reset button"
+  },
+  "lap": {
+    "message": "Lap",
+    "description": "Lap button for stopwatch"
+  },
+  "copied": {
+    "message": "Copied!",
+    "description": "Copied to clipboard notification"
+  },
+  "businessHours": {
+    "message": "Business Hours",
+    "description": "Business hours indicator"
+  },
+  "sunrise": {
+    "message": "Sunrise",
+    "description": "Sunrise time"
+  },
+  "sunset": {
+    "message": "Sunset",
+    "description": "Sunset time"
+  },
+  "weather": {
+    "message": "Weather",
+    "description": "Weather information"
+  },
+  "welcomeTitle": {
+    "message": "Welcome to World Clock!",
+    "description": "Onboarding title"
+  },
+  "welcomeMessage": {
+    "message": "Your privacy-first, feature-packed world clock extension.",
+    "description": "Onboarding welcome message"
+  },
+  "getStarted": {
+    "message": "Get Started",
+    "description": "Get started button"
+  },
+  "keyboardShortcuts": {
+    "message": "Press ? for keyboard shortcuts",
+    "description": "Keyboard shortcuts hint"
+  }
+}
+

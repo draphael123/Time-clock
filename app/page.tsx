@@ -121,9 +121,12 @@ export default function Home() {
   }
 
   const handleDownload = () => {
-    // Direct download link to latest version from GitHub main branch
-    // This always downloads the most recent version with all features
-    window.open('https://github.com/draphael123/Time-clock/archive/refs/heads/main.zip', '_blank')
+    // Download the packaged extension with clock icons
+    // Falls back to GitHub if local file not available
+    const link = document.createElement('a')
+    link.href = '/world-clock-extension.zip'
+    link.download = 'world-clock-extension.zip'
+    link.click()
   }
 
   return (

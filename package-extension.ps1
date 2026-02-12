@@ -60,11 +60,11 @@ Compress-Archive -Path "$tempDir\*" -DestinationPath $zipName -Force
 # Cleanup
 Remove-Item $tempDir -Recurse -Force
 
-Write-Host "`n✅ Extension packaged successfully!" -ForegroundColor Green
-Write-Host "📦 Package: $zipName" -ForegroundColor Cyan
+Write-Host "`nExtension packaged successfully!" -ForegroundColor Green
+Write-Host "Package: $zipName" -ForegroundColor Cyan
 Write-Host "`nTo install:" -ForegroundColor Yellow
 Write-Host "1. Extract the ZIP file" -ForegroundColor White
 Write-Host "2. Go to chrome://extensions/" -ForegroundColor White
 Write-Host "3. Enable Developer mode" -ForegroundColor White
-Write-Host "4. Click 'Load unpacked' and select the extracted folder" -ForegroundColor White
+Write-Host "4. Click Load unpacked and select the extracted folder" -ForegroundColor White
 

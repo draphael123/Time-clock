@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0f0f0;
+    }
+    .flag {
+      width: 128px;
+      height: 128px;
+      position: relative;
+      border: 2px solid #333;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .flag-top {
+      width: 100%;
+      height: 50%;
+      background: #0038a8;
+    }
+    .flag-bottom {
+      width: 100%;
+      height: 50%;
+      background: #ce1126;
+    }
+    .flag-triangle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 64px 64px 0 0;
+      border-color: #ffffff transparent transparent transparent;
+    }
+    .flag-sun {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 30px;
+      height: 30px;
+      background: #fcd116;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px #fcd116;
+    }
+    .flag-star {
+      position: absolute;
+      color: #fcd116;
+      font-size: 8px;
+      font-weight: bold;
+    }
+    .star1 { top: 15px; left: 35px; }
+    .star2 { top: 25px; left: 45px; }
+    .star3 { top: 35px; left: 35px; }
+  </style>
+</head>
+<body>
+  <div class="flag">
+    <div class="flag-top"></div>
+    <div class="flag-bottom"></div>
+    <div class="flag-triangle"></div>
+    <div class="flag-sun"></div>
+    <div class="flag-star star1">★</div>
+    <div class="flag-star star2">★</div>
+    <div class="flag-star star3">★</div>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,159 @@
+{
+  "extName": {
+    "message": "世界時計 - EST、PST、ブラジル、イタリア",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "ストップウォッチ、タイマー、ポモドーロ、アラーム、世界地図、タイムライン、プロファイル、天気、560以上のタイムゾーンを備えた美しい世界時計！",
+    "description": "Extension description"
+  },
+  "appTitle": {
+    "message": "世界時計",
+    "description": "Application title"
+  },
+  "settings": {
+    "message": "設定",
+    "description": "Settings button label"
+  },
+  "addTimezone": {
+    "message": "タイムゾーンを追加",
+    "description": "Add timezone button"
+  },
+  "darkMode": {
+    "message": "ダークモード",
+    "description": "Dark mode toggle"
+  },
+  "hour24": {
+    "message": "24時間形式",
+    "description": "24-hour time format option"
+  },
+  "showSeconds": {
+    "message": "秒を表示",
+    "description": "Show seconds option"
+  },
+  "compactMode": {
+    "message": "コンパクトモード",
+    "description": "Compact view mode"
+  },
+  "stopwatch": {
+    "message": "ストップウォッチ",
+    "description": "Stopwatch feature"
+  },
+  "timer": {
+    "message": "タイマー",
+    "description": "Timer feature"
+  },
+  "pomodoro": {
+    "message": "ポモドーロ",
+    "description": "Pomodoro timer feature"
+  },
+  "alarms": {
+    "message": "アラーム",
+    "description": "Alarms feature"
+  },
+  "timeConverter": {
+    "message": "時間変換",
+    "description": "Time converter feature"
+  },
+  "worldMap": {
+    "message": "世界地図",
+    "description": "World map view"
+  },
+  "timeline": {
+    "message": "タイムライン",
+    "description": "Timeline comparison view"
+  },
+  "profiles": {
+    "message": "プロファイル",
+    "description": "Timezone profiles"
+  },
+  "holidays": {
+    "message": "祝日",
+    "description": "Upcoming holidays"
+  },
+  "search": {
+    "message": "検索",
+    "description": "Search button/label"
+  },
+  "share": {
+    "message": "共有",
+    "description": "Share button"
+  },
+  "refresh": {
+    "message": "更新",
+    "description": "Refresh button"
+  },
+  "close": {
+    "message": "閉じる",
+    "description": "Close button"
+  },
+  "save": {
+    "message": "保存",
+    "description": "Save button"
+  },
+  "cancel": {
+    "message": "キャンセル",
+    "description": "Cancel button"
+  },
+  "delete": {
+    "message": "削除",
+    "description": "Delete button"
+  },
+  "edit": {
+    "message": "編集",
+    "description": "Edit button"
+  },
+  "start": {
+    "message": "開始",
+    "description": "Start button"
+  },
+  "stop": {
+    "message": "停止",
+    "description": "Stop button"
+  },
+  "reset": {
+    "message": "リセット",
+    "description": "Reset button"
+  },
+  "lap": {
+    "message": "ラップ",
+    "description": "Lap button for stopwatch"
+  },
+  "copied": {
+    "message": "コピーしました！",
+    "description": "Copied to clipboard notification"
+  },
+  "businessHours": {
+    "message": "営業時間",
+    "description": "Business hours indicator"
+  },
+  "sunrise": {
+    "message": "日の出",
+    "description": "Sunrise time"
+  },
+  "sunset": {
+    "message": "日の入り",
+    "description": "Sunset time"
+  },
+  "weather": {
+    "message": "天気",
+    "description": "Weather information"
+  },
+  "welcomeTitle": {
+    "message": "世界時計へようこそ！",
+    "description": "Onboarding title"
+  },
+  "welcomeMessage": {
+    "message": "プライバシー重視で機能満載の世界時計拡張機能。",
+    "description": "Onboarding welcome message"
+  },
+  "getStarted": {
+    "message": "始める",
+    "description": "Get started button"
+  },
+  "keyboardShortcuts": {
+    "message": "? を押してキーボードショートカットを表示",
+    "description": "Keyboard shortcuts hint"
+  }
+}
+
